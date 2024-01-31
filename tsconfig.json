@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"lib": [ "es2022" ],
+		"target": "es2022",
+		"module": "commonjs",
+		"esModuleInterop": true,
+
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+
+		"outDir": "build/",
+
+		"skipLibCheck": true
+	},
+
+	"include": [
+		"src/**/*.ts"
+	]
+}

@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "jsonfile": "^6.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.13",
+    "@types/jsonfile": "^6.1.4"
+  }
+}
