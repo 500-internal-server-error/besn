@@ -57,8 +57,6 @@ export class StatusCommandHandler implements ICommandHandler {
 						{
 							name: "Emotion",
 							value: (interaction.options.getBoolean("gift") ? "OMG GIFT!!! :mafuyulilguy:" : ":enajiiempty:")
-							// :mafuyulilguy: = <:_:1119765248828780687>
-							// :enajiiempty: = <:_:1132921144366878730>
 						}
 					)
 			],

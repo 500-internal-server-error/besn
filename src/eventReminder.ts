@@ -77,11 +77,7 @@ export class EventReminder {
 
 		// Find all the stuff that are scheduled to start/end in the future
 
-		// jq '.[] | select(.startAt >= ${DateTime.utc().toMillis()})' ./run/resources/stories.json
-		// jq '.[] | select(.endAt >= ${DateTime.utc().toMillis()} and .id < 1000)' ./run/resources/shows.json
-
 		const futureStories = stories.filter((story) => story.startAt >= currentTime);
-		// const futureStories = [{id: 10, name: "oohoo", eventType: "yes", startAt: 1707202290000}]
 		const futureShows = shows.filter((show) => show.endAt >= currentTime && show.id < 1000);
 
 		for (const futureStory of futureStories) {
