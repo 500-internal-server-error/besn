@@ -2,7 +2,7 @@ import { Client, IntentsBitField } from "discord.js";
 import * as jsonfile from "jsonfile";
 
 import { MasterCommandHandler } from "./commandHandler";
-import { ListEventsCommandHandler } from "./commands/listEvents";
+import { ListEventsCommandHandler } from "./commands/listevents";
 import { StatusCommandHandler } from "./commands/status";
 import { UpdatedbCommandHandler } from "./commands/updatedb";
 import { EventReminder, EventReminderEvent } from "./eventReminder";
