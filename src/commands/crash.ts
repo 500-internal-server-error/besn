@@ -5,7 +5,7 @@ import { ICommandHandler } from "../structures";
 
 export class CrashCommandHandler implements ICommandHandler {
 	private static readonly INSTANCE = new CrashCommandHandler();
-	private static readonly LOGGER = Logger.get("ListEventsCommandHandler");
+	private static readonly LOGGER = Logger.get("CrashCommandHandler");
 
 	private constructor() {}
 
