@@ -23,15 +23,25 @@ export class MasterCommandHandler {
 		for (const serviceLocation of this.config.serviceLocationWhitelist) {
 			try {
 				// For every guild we plan to serve
+
+				MasterCommandHandler.LOGGER.debug(`Accessing guild ${serviceLocation.guildId}...`);
 				const guild = await this.client.guilds.fetch(serviceLocation.guildId);
 
 				// Start fresh
+
+				MasterCommandHandler.LOGGER.debug(`Resetting commands for guild ${serviceLocation.guildId}...`);
 				await guild.commands.set([]);
 
 				// Add all the commands
+
+				MasterCommandHandler.LOGGER.debug(`Adding commands for guild ${serviceLocation.guildId}...`);
+
 				for (const command of this.commands) {
+					MasterCommandHandler.LOGGER.debug(`  - Adding command ${command.getSignature().name} for guild ${serviceLocation.guildId}...`);
 					guild.commands.create(command.getSignature());
 				}
+
+				MasterCommandHandler.LOGGER.debug(`Finished adding commands for guild ${serviceLocation.guildId}`);
 			} catch (e: any) {
 				MasterCommandHandler.LOGGER.error(`${e.name}: ${e.message}`);
 				MasterCommandHandler.LOGGER.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
