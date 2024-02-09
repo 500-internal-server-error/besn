@@ -63,6 +63,7 @@ async function main() {
 
 				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
 				ioChannel.send(`# Event Starting <t:${startAtSeconds}:R>!\n\n## Event _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
+				logger.log(`Announced event at guild ${guild.id}`);
 			} catch (e: any) {
 				logger.error(e.message);
 				logger.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
@@ -81,6 +82,7 @@ async function main() {
 
 				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
 				ioChannel.send(`# Virtual Live Starting <t:${startAtSeconds}:R>!\n\n## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
+				logger.log(`Announced event at guild ${guild.id}`);
 			} catch (e: any) {
 				logger.error(e.message);
 				logger.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
