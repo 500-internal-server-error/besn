@@ -28,7 +28,11 @@ export class ListEventsCommandHandler implements ICommandHandler {
 
 		ListEventsCommandHandler.LOGGER.debug("Enumerating scheduled events...");
 
-		let reply = "# Scheduled Events\n";
+		const replies: string[] = [];
+		let currentReplyMessageLength = 0;
+		let replyMessageCount = 0;
+
+		let reply = `# Scheduled Events (page ${replyMessageCount + 1})\n`;
 
 		const futureEvents = EventReminder.getScheduledEvents();
 
@@ -45,10 +49,21 @@ export class ListEventsCommandHandler implements ICommandHandler {
 			ListEventsCommandHandler.LOGGER.debug(`  - eventRemindAtTime.toSeconds() = ${eventRemindAtTime.toSeconds()}`);
 
 			reply += `- ${eventName} at <t:${eventRemindAtTime.toSeconds()}:f> / <t:${eventRemindAtTime.toSeconds()}:R>\n`;
+			currentReplyMessageLength++;
+
+			if (currentReplyMessageLength > 20) {
+				replies.push(reply);
+				currentReplyMessageLength = 0;
+				replyMessageCount++;
+				reply = `# Scheduled Events (page ${replyMessageCount + 1})\n`;
+			}
 		}
 
 		ListEventsCommandHandler.LOGGER.debug("Finished enumerating scheduled events");
 
-		await interaction.reply({ content: reply, ephemeral: true });
+		await interaction.reply({ content: replies[0], ephemeral: true });
+		for (let i = 1; i < replies.length; i++) {
+			await interaction.followUp({ content: replies[i], ephemeral: true });
+		}
 	}
 }

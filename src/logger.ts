@@ -1,11 +1,12 @@
 import * as fs from "fs";
 import { DateTime } from "luxon";
 
+import * as util from "./util";
+
 export class Logger {
 	// Replace `:` with `.` to avoid file name problems on Windows
-	private static LOG_FILE_HANDLE: fs.WriteStream = fs.createWriteStream(
-		`./run/${DateTime.utc().toISO().replaceAll(":", ".")}.log`,
-		{ flags: "a+", mode: 0o644, flush: true }
+	private static LOG_FILE_HANDLE: fs.WriteStream = util.openLogFileHandle(
+		`./run/logs/${DateTime.utc().toISO().replaceAll(":", ".")}.log`
 	);
 
 	private readonly prefix: string;

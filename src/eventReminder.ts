@@ -1,11 +1,13 @@
-import { spawn, spawnSync } from "child_process";
+import { spawn } from "child_process";
 import { Snowflake } from "discord.js";
 import { EventEmitter } from "events";
+import * as fs from "fs";
 import * as jsonfile from "jsonfile";
 import { DateTime } from "luxon";
 import * as ns from "node-schedule";
 
 import { Logger } from "./logger";
+import { VirtualLive } from "./structures";
 
 export type EventReminderConfig = {
 	pingRoleId: Snowflake;
@@ -31,7 +33,7 @@ export class EventReminder {
 		// Wait until we are done (sync), before downloading, otherwise they have nowhere to go
 
 		this.LOGGER.log("Preparing resource folder...");
-		spawnSync("mkdir -p ./run/resources", { shell: true });
+		fs.mkdirSync("./run/resources/", { recursive: true });
 
 		// Download can be concurrent (async), we don't need to wait for one to finish before starting another
 		// But we do need to wait for all of them to finish downloading before we can process them
@@ -62,7 +64,10 @@ export class EventReminder {
 		// But we do again need to wait for all of them to finish
 
 		this.LOGGER.log("Reading resource files...");
-		const [stories, shows]: any[][] = (await Promise.allSettled([
+
+		// This should be fine, since we have a default value in case the promise was not fulfilled
+		// @ts-expect-error
+		const [stories, shows]: [any[], VirtualLive[]] = (await Promise.allSettled([
 			jsonfile.readFile("./run/resources/stories.json"),
 			jsonfile.readFile("./run/resources/shows.json"),
 		])).map((result) => result.status === "fulfilled" ? result.value : []);
@@ -76,9 +81,14 @@ export class EventReminder {
 		const currentTime = DateTime.utc().toMillis();
 
 		// Find all the stuff that are scheduled to start/end in the future
+		// Note: show.id < 1k to ensure only "real" shows get captured, the game has some shows for every new player,
+		// which use id "bands" > 10k, > 20k, etc. Not sure what the lowest "band" is, 1k is probably fine to guarantee
+		// it's a "real" show
 
 		const futureStories = stories.filter((story) => story.startAt >= currentTime);
 		const futureShows = shows.filter((show) => show.endAt >= currentTime && show.id < 1000);
+
+		this.LOGGER.log("Scheduling future stories...");
 
 		for (const futureStory of futureStories) {
 			const { id, name, eventType: storyEventType, startAt } = futureStory;
@@ -89,10 +99,10 @@ export class EventReminder {
 			const normalRemindAtDate = startAtDate.minus({ minutes: 5 });
 			const now = DateTime.utc();
 
-			this.LOGGER.debug(`Scheduling future story: ${name} (id = ${id}, eventType = ${storyEventType})`);
-			this.LOGGER.debug(`  - Starts at: ${startAtDate.toISO()}`);
-			this.LOGGER.debug(`  - Normal Remind at: ${normalRemindAtDate.toISO()}`);
-			this.LOGGER.debug(`  - Now is: ${now.toISO()}`);
+			this.LOGGER.debug(`  - Scheduling future story: ${name} (id = ${id}, eventType = ${storyEventType})`);
+			this.LOGGER.debug(`    - Starts at: ${startAtDate.toISO()}`);
+			this.LOGGER.debug(`    - Normal Remind at: ${normalRemindAtDate.toISO()}`);
+			this.LOGGER.debug(`    - Now is: ${now.toISO()}`);
 
 			// If the we passed the start date already, then don't bother reminding
 
@@ -109,13 +119,13 @@ export class EventReminder {
 
 			if (normalRemindAtDate < now) {
 				actualRemindAtDate = startAtDate;
-				this.LOGGER.debug(`  - Start time is in the future but normal remind time is in the past, use start time`);
+				this.LOGGER.debug(`    - Start time is in the future but normal remind time is in the past, use start time`);
 			} else {
 				actualRemindAtDate = normalRemindAtDate;
-				this.LOGGER.debug(`  - Normal remind time is in the future, use normal remind time`);
+				this.LOGGER.debug(`    - Normal remind time is in the future, use normal remind time`);
 			}
 
-			this.LOGGER.debug(`  - Actual Remind at: ${actualRemindAtDate.toISO()}`);
+			this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
 			const job = ns.scheduleJob(name, actualRemindAtDate.toJSDate(), (date) => {
 				this.EVENT_EMITTER.emit(EventReminderEvent.StoryStart, name, startAtDate.toSeconds());
@@ -124,10 +134,14 @@ export class EventReminder {
 			});
 		}
 
+		this.LOGGER.log("Scheduling future shows...");
+
 		for (const futureShow of futureShows) {
 			const { id, name, virtualLiveSchedules } = futureShow;
 
-			for (let i = 0, schedule = virtualLiveSchedules[i]; i < virtualLiveSchedules.length; i++) {
+			this.LOGGER.debug(`Scheduling future show (outer for loop): { id: ${id}, name: "${name}" }`);
+
+			for (const [i, schedule] of virtualLiveSchedules.entries()) {
 				const { startAt } = schedule;
 
 				// Remind 5 mins before start to give time to prepare
@@ -136,15 +150,15 @@ export class EventReminder {
 				const normalRemindAtDate = startAtDate.minus({ minutes: 5 });
 				const now = DateTime.utc();
 
-				this.LOGGER.debug(`Scheduling future show: ${name} #${i + 1} (id = ${id})`);
-				this.LOGGER.debug(`  - Starts at: ${startAtDate.toISO()}`);
-				this.LOGGER.debug(`  - Normal Remind at: ${normalRemindAtDate.toISO()}`);
-				this.LOGGER.debug(`  - Now is: ${now.toISO()}`);
+				this.LOGGER.debug(`  - Scheduling future show: ${name} #${i + 1} (id = ${id})`);
+				this.LOGGER.debug(`    - Starts at: ${startAtDate.toISO()}`);
+				this.LOGGER.debug(`    - Normal Remind at: ${normalRemindAtDate.toISO()}`);
+				this.LOGGER.debug(`    - Now is: ${now.toISO()}`);
 
 				// If the we passed the start date already, then don't bother reminding
 
 				if (startAtDate < now) {
-					this.LOGGER.debug(`  - Start time is in the past, don't bother reminding`);
+					this.LOGGER.debug(`    - Start time is in the past, don't bother reminding`);
 					continue;
 				};
 
@@ -156,13 +170,13 @@ export class EventReminder {
 
 				if (normalRemindAtDate < now) {
 					actualRemindAtDate = startAtDate;
-					this.LOGGER.debug(`  - Start time is in the future but normal remind time is in the past, use start time`);
+					this.LOGGER.debug(`    - Start time is in the future but normal remind time is in the past, use start time`);
 				} else {
 					actualRemindAtDate = normalRemindAtDate;
-					this.LOGGER.debug(`  - Normal remind time is in the future, use normal remind time`);
+					this.LOGGER.debug(`    - Normal remind time is in the future, use normal remind time`);
 				}
 
-				this.LOGGER.debug(`  - Actual Remind at: ${actualRemindAtDate.toISO()}`);
+				this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
 				const job = ns.scheduleJob(`${name} #${i + 1}`, actualRemindAtDate.toJSDate(), (date) => {
 					this.EVENT_EMITTER.emit(EventReminderEvent.ShowStart, name, startAtDate.toSeconds());

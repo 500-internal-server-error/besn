@@ -2,7 +2,8 @@ import { Client, IntentsBitField } from "discord.js";
 import * as jsonfile from "jsonfile";
 
 import { MasterCommandHandler } from "./commandHandler";
-import { ListEventsCommandHandler } from "./commands/listEvents";
+import { CrashCommandHandler } from "./commands/crash";
+import { ListEventsCommandHandler } from "./commands/listevents";
 import { StatusCommandHandler } from "./commands/status";
 import { UpdatedbCommandHandler } from "./commands/updatedb";
 import { EventReminder, EventReminderEvent } from "./eventReminder";
@@ -21,6 +22,7 @@ async function main() {
 	});
 
 	const commands: ICommandHandler[] = [
+		CrashCommandHandler.getInstance(),
 		ListEventsCommandHandler.getInstance(),
 		StatusCommandHandler.getInstance(),
 		UpdatedbCommandHandler.getInstance()
@@ -61,6 +63,7 @@ async function main() {
 
 				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
 				ioChannel.send(`# Event Starting <t:${startAtSeconds}:R>!\n\n## Event _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
+				logger.log(`Announced event at guild ${guild.id}`);
 			} catch (e: any) {
 				logger.error(e.message);
 				logger.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
@@ -78,7 +81,8 @@ async function main() {
 				if (!ioChannel.isTextBased()) continue;
 
 				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
-				ioChannel.send(`# Virtual Live Starting <t:${startAtSeconds}!\n\n## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
+				ioChannel.send(`# Virtual Live Starting <t:${startAtSeconds}:R>!\n\n## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
+				logger.log(`Announced event at guild ${guild.id}`);
 			} catch (e: any) {
 				logger.error(e.message);
 				logger.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
