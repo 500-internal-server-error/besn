@@ -78,7 +78,7 @@ async function main() {
 				if (!ioChannel.isTextBased()) continue;
 
 				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
-				ioChannel.send(`# Virtual Live Starting <t:${startAtSeconds}!\n\n## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
+				ioChannel.send(`# Virtual Live Starting <t:${startAtSeconds}:R>!\n\n## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
 			} catch (e: any) {
 				logger.error(e.message);
 				logger.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
