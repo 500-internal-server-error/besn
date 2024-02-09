@@ -1,6 +1,7 @@
-import { spawn, spawnSync } from "child_process";
+import { spawn } from "child_process";
 import { Snowflake } from "discord.js";
 import { EventEmitter } from "events";
+import * as fs from "fs";
 import * as jsonfile from "jsonfile";
 import { DateTime } from "luxon";
 import * as ns from "node-schedule";
@@ -31,7 +32,7 @@ export class EventReminder {
 		// Wait until we are done (sync), before downloading, otherwise they have nowhere to go
 
 		this.LOGGER.log("Preparing resource folder...");
-		spawnSync("mkdir -p ./run/resources", { shell: true });
+		fs.mkdirSync("./run/resources/", { recursive: true });
 
 		// Download can be concurrent (async), we don't need to wait for one to finish before starting another
 		// But we do need to wait for all of them to finish downloading before we can process them
