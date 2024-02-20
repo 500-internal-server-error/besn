@@ -29,17 +29,18 @@ export class UpdatedbCommandHandler implements ICommandHandler {
 		const downloadProgress = EventReminder.refreshResources();
 
 		// This shouldn't take too long, so we can wait it out
-		const reply = await interaction.reply({
+		await interaction.reply({
 			content: "Updating event and virtual live list...",
-			fetchReply: true
+			ephemeral: true
 		});
 
 		// We probably finish replying faster than we finish downloading, so now we wait out the download
 		await downloadProgress;
 
 		// Edit our original reply to signal we finished downloading
-		reply.reply({
-			content: "Finished updating event and virtual live list"
+		await interaction.followUp({
+			content: "Finished updating event and virtual live list",
+			ephemeral: true
 		});
 	}
 }
