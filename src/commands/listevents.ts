@@ -59,9 +59,11 @@ export class ListEventsCommandHandler implements ICommandHandler {
 			}
 		}
 
+		replies.push(reply);
+
 		ListEventsCommandHandler.LOGGER.debug("Finished enumerating scheduled events");
 
-		await interaction.reply({ content: replies[0] ?? reply, ephemeral: true });
+		await interaction.reply({ content: replies[0], ephemeral: true });
 		for (let i = 1; i < replies.length; i++) {
 			await interaction.followUp({ content: replies[i], ephemeral: true });
 		}
