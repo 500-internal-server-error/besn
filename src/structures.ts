@@ -1,6 +1,6 @@
-import { ChatInputApplicationCommandData, ChatInputCommandInteraction, Snowflake } from "discord.js"
+import { ChatInputApplicationCommandData, ChatInputCommandInteraction, Snowflake } from "discord.js";
 
-import { EventReminderConfig } from "./eventReminder"
+import { EventReminderConfig } from "./eventReminder";
 
 export type ServiceLocation = {
 	guildId: Snowflake,
