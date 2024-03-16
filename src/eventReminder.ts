@@ -9,10 +9,6 @@ import * as ns from "node-schedule";
 import { Logger } from "./logger";
 import { VirtualLive } from "./structures";
 
-export type EventReminderConfig = {
-	pingRoleId: Snowflake;
-}
-
 export const enum EventReminderEvent {
 	StoryStart = "storyStart",
 	ShowStart = "showStart"

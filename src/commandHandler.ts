@@ -1,26 +1,23 @@
 import { ChatInputCommandInteraction, Client, GuildMember } from "discord.js";
 
 import { Logger } from "./logger";
-import { ConfigFile, ICommandHandler } from "./structures";
+import { ICommandHandler, ServiceLocationV2 } from "./structures";
 
 export class MasterCommandHandler {
 	private static readonly LOGGER = Logger.get("MasterCommandHandler");
 
 	private client: Client;
-	private config: ConfigFile;
+	private serviceLocations: readonly ServiceLocationV2[];
 	private commands: ICommandHandler[];
 
-	public constructor(client: Client, config: ConfigFile, commands?: ICommandHandler[]) {
+	public constructor(client: Client, serviceLocations: readonly ServiceLocationV2[], commands?: ICommandHandler[]) {
 		this.client = client;
-		this.config = config;
+		this.serviceLocations = serviceLocations;
 		this.commands = commands ?? [];
 	}
 
-	public async registerCommands(commands?: ICommandHandler[]) {
-		// If we were passed a new array of commands then we use that
-		this.commands = commands ?? this.commands;
-
-		for (const serviceLocation of this.config.serviceLocationWhitelist) {
+	public async registerCommands() {
+		for (const serviceLocation of this.serviceLocations) {
 			try {
 				// For every guild we plan to serve
 
@@ -52,7 +49,7 @@ export class MasterCommandHandler {
 	public async deleteCommands() {
 		this.commands = [];
 
-		for (const serviceLocation of this.config.serviceLocationWhitelist) {
+		for (const serviceLocation of this.serviceLocations) {
 			try {
 				const guild = await this.client.guilds.fetch(serviceLocation.guildId);
 
@@ -70,7 +67,7 @@ export class MasterCommandHandler {
 
 		// Check if the interaction was issued from a location we service
 
-		const requiredGuild = this.config.serviceLocationWhitelist.filter(
+		const requiredGuild = this.serviceLocations.filter(
 			(serviceLocation) => serviceLocation.guildId === executorGuild?.id
 		);
 

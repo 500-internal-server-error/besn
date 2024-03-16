@@ -1,22 +1,28 @@
-import { ChatInputApplicationCommandData, ChatInputCommandInteraction, Snowflake } from "discord.js";
+import { ChatInputApplicationCommandData, ChatInputCommandInteraction } from "discord.js";
+import { z } from "zod";
 
-import { EventReminderConfig } from "./eventReminder";
+export const serviceLocationSchema = z.object({
+	guildId: z.string(),
+	ioChannelId: z.string(),
+	commandAccessRoleIds: z.array(z.string()),
+	modules: z.object({
+		eventReminder: z.object({
+			pingRoleId: z.string()
+		})
+	})
+});
 
-export type ServiceLocation = {
-	guildId: Snowflake,
-	ioChannelId: Snowflake,
-	commandAccessRoleIds: Snowflake[],
+export type ServiceLocationV2 = z.infer<typeof serviceLocationSchema>;
 
-	modules: {
-		eventReminder: EventReminderConfig
-	}
-}
+export const globalConfigFileSchema = z.object({
+	ownerId: z.string(),
+	ownerGuildId: z.string(),
+	ownerIoChannelId: z.string(),
 
-export type ConfigFile = {
-	ownerId: Snowflake,
-	token: string,
-	serviceLocationWhitelist: ServiceLocation[],
-}
+	token: z.string()
+});
+
+export type GlobalConfigFile = z.infer<typeof globalConfigFileSchema>;
 
 export interface ICommandHandler {
 	getSignature(): ChatInputApplicationCommandData;

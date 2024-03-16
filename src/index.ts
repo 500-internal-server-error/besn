@@ -1,19 +1,20 @@
 import { Client, IntentsBitField } from "discord.js";
-import * as jsonfile from "jsonfile";
 
 import { MasterCommandHandler } from "./commandHandler";
 import { CrashCommandHandler } from "./commands/crash";
+import { DumpConfigCommandHandler } from "./commands/dumpconfig";
 import { ListEventsCommandHandler } from "./commands/listevents";
 import { StatusCommandHandler } from "./commands/status";
 import { UpdatedbCommandHandler } from "./commands/updatedb";
+import { ConfigManager } from "./configManager";
 import { EventReminder, EventReminderEvent } from "./eventReminder";
 import { Logger } from "./logger";
-import { ConfigFile, ICommandHandler } from "./structures";
+import { ICommandHandler } from "./structures";
 
 async function main() {
 	const logger = Logger.get("main");
 
-	const config: ConfigFile = jsonfile.readFileSync("./config.json");
+	ConfigManager.loadConfigs();
 
 	const client = new Client({
 		intents: [
@@ -25,10 +26,11 @@ async function main() {
 		CrashCommandHandler.getInstance(),
 		ListEventsCommandHandler.getInstance(),
 		StatusCommandHandler.getInstance(),
-		UpdatedbCommandHandler.getInstance()
+		UpdatedbCommandHandler.getInstance(),
+		DumpConfigCommandHandler.getInstance()
 	];
 
-	const masterCommandHandler = new MasterCommandHandler(client, config, commands);
+	const masterCommandHandler = new MasterCommandHandler(client, ConfigManager.getServiceLocations(), commands);
 
 	client.on("ready", async () => {
 		// Definitely not null since we are responding to the "ready" event,
@@ -52,7 +54,7 @@ async function main() {
 	logger.log("Setting up module EventReminder...");
 	await EventReminder.init();
 	EventReminder.EVENT_EMITTER.on(EventReminderEvent.StoryStart, async (name, startAtSeconds) => {
-		for (const serviceLocation of config.serviceLocationWhitelist) {
+		for (const serviceLocation of ConfigManager.getServiceLocations()) {
 			try {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
@@ -71,7 +73,7 @@ async function main() {
 		}
 	});
 	EventReminder.EVENT_EMITTER.on(EventReminderEvent.ShowStart, async (name, startAtSeconds) => {
-		for (const serviceLocation of config.serviceLocationWhitelist) {
+		for (const serviceLocation of ConfigManager.getServiceLocations()) {
 			try {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
@@ -91,7 +93,7 @@ async function main() {
 	});
 
 	logger.log("Logging in...");
-	client.login(config.token);
+	client.login(ConfigManager.getGlobalConfig().token);
 }
 
 (async () => {
