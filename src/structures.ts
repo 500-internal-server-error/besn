@@ -12,7 +12,7 @@ export const serviceLocationSchema = z.object({
 	})
 });
 
-export type ServiceLocationV2 = z.infer<typeof serviceLocationSchema>;
+export type ServiceLocation = z.infer<typeof serviceLocationSchema>;
 
 export const globalConfigFileSchema = z.object({
 	ownerId: z.string(),

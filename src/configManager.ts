@@ -3,13 +3,13 @@ import * as fs from "fs";
 import * as jsonfile from "jsonfile";
 
 import { Logger } from "./logger";
-import { GlobalConfigFile, ServiceLocationV2, globalConfigFileSchema, serviceLocationSchema } from "./structures";
+import { GlobalConfigFile, ServiceLocation, globalConfigFileSchema, serviceLocationSchema } from "./structures";
 
 export class ConfigManager {
 	private static readonly LOGGER = Logger.get("ConfigManager");
 
 	private static GLOBAL_CONFIG: GlobalConfigFile;
-	private static readonly CONFIGS = new Map<Snowflake, ServiceLocationV2>();
+	private static readonly CONFIGS = new Map<Snowflake, ServiceLocation>();
 
 	private constructor() {}
 
@@ -51,14 +51,14 @@ export class ConfigManager {
 		return this.GLOBAL_CONFIG;
 	}
 
-	public static getServiceLocations(): readonly ServiceLocationV2[] {
-		const serviceLocations: ServiceLocationV2[] = [];
+	public static getServiceLocations(): readonly ServiceLocation[] {
+		const serviceLocations: ServiceLocation[] = [];
 		for (const serviceLocation of this.CONFIGS.values()) serviceLocations.push(serviceLocation);
 
 		return serviceLocations;
 	}
 
-	public static getConfig(guildId: Snowflake): ServiceLocationV2 | undefined {
+	public static getConfig(guildId: Snowflake): ServiceLocation | undefined {
 		return this.CONFIGS.get(guildId);
 	}
 }

@@ -1,16 +1,16 @@
 import { ChatInputCommandInteraction, Client, GuildMember } from "discord.js";
 
 import { Logger } from "./logger";
-import { ICommandHandler, ServiceLocationV2 } from "./structures";
+import { ICommandHandler, ServiceLocation } from "./structures";
 
 export class MasterCommandHandler {
 	private static readonly LOGGER = Logger.get("MasterCommandHandler");
 
 	private client: Client;
-	private serviceLocations: readonly ServiceLocationV2[];
+	private serviceLocations: readonly ServiceLocation[];
 	private commands: ICommandHandler[];
 
-	public constructor(client: Client, serviceLocations: readonly ServiceLocationV2[], commands?: ICommandHandler[]) {
+	public constructor(client: Client, serviceLocations: readonly ServiceLocation[], commands?: ICommandHandler[]) {
 		this.client = client;
 		this.serviceLocations = serviceLocations;
 		this.commands = commands ?? [];
