@@ -4,6 +4,7 @@ import { MasterCommandHandler } from "./commandHandler";
 import { CrashCommandHandler } from "./commands/crash";
 import { DumpConfigCommandHandler } from "./commands/dumpconfig";
 import { ListEventsCommandHandler } from "./commands/listevents";
+import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs";
 import { StatusCommandHandler } from "./commands/status";
 import { UpdatedbCommandHandler } from "./commands/updatedb";
 import { ConfigManager } from "./configManager";
@@ -24,10 +25,11 @@ async function main() {
 
 	const commands: ICommandHandler[] = [
 		CrashCommandHandler.getInstance(),
+		DumpConfigCommandHandler.getInstance(),
 		ListEventsCommandHandler.getInstance(),
 		StatusCommandHandler.getInstance(),
 		UpdatedbCommandHandler.getInstance(),
-		DumpConfigCommandHandler.getInstance()
+		ReloadConfigsCommandHandler.getInstance()
 	];
 
 	const masterCommandHandler = new MasterCommandHandler(client, ConfigManager.getServiceLocations(), commands);

@@ -34,6 +34,7 @@ export class ConfigManager {
 		}
 		const dirFiles = dirContent.filter((dirent) => dirent.isFile());
 
+		this.CONFIGS.clear();
 		for (const dirFile of dirFiles) {
 			try {
 				this.LOGGER.log(`Reading service location config ${dirFile.name}...`);
