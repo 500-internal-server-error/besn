@@ -1,8 +1,8 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 
-import { EventReminder } from "../eventReminder";
-import { ICommandHandler } from "../structures";
-import { Logger } from "../logger";
+import { EventReminder } from "../eventReminder.js";
+import { ICommandHandler } from "../structures.js";
+import { Logger } from "../logger.js";
 
 export class UpdatedbCommandHandler implements ICommandHandler {
 	private static readonly INSTANCE = new UpdatedbCommandHandler();

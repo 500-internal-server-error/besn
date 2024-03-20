@@ -1,9 +1,9 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { DateTime } from "luxon";
 
-import { EventReminder } from "../eventReminder";
-import { Logger } from "../logger";
-import { ICommandHandler } from "../structures";
+import { EventReminder } from "../eventReminder.js";
+import { Logger } from "../logger.js";
+import { ICommandHandler } from "../structures.js";
 
 export class ListEventsCommandHandler implements ICommandHandler {
 	private static readonly INSTANCE = new ListEventsCommandHandler();

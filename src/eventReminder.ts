@@ -2,12 +2,12 @@ import { spawn } from "child_process";
 import { Snowflake } from "discord.js";
 import { EventEmitter } from "events";
 import * as fs from "fs";
-import * as jsonfile from "jsonfile";
+import jsonfile from "jsonfile";
 import { DateTime } from "luxon";
 import * as ns from "node-schedule";
 
-import { Logger } from "./logger";
-import { VirtualLive } from "./structures";
+import { Logger } from "./logger.js";
+import { VirtualLive } from "./structures.js";
 
 export const enum EventReminderEvent {
 	StoryStart = "storyStart",
@@ -64,8 +64,8 @@ export class EventReminder {
 		// This should be fine, since we have a default value in case the promise was not fulfilled
 		// @ts-expect-error
 		const [stories, shows]: [any[], VirtualLive[]] = (await Promise.allSettled([
-			jsonfile.readFile("./run/resources/stories.json"),
-			jsonfile.readFile("./run/resources/shows.json"),
+			jsonfile.readFileSync("./run/resources/stories.json"),
+			jsonfile.readFileSync("./run/resources/shows.json"),
 		])).map((result) => result.status === "fulfilled" ? result.value : []);
 
 		// We can cancel everything so we start clean

@@ -7,9 +7,9 @@ import {
 } from "discord.js";
 import { DateTime } from "luxon";
 
-import { Logger } from "../logger";
-import { ICommandHandler } from "../structures";
-import * as Util from "../util";
+import { Logger } from "../logger.js";
+import { ICommandHandler } from "../structures.js";
+import * as Util from "../util.js";
 
 export class StatusCommandHandler implements ICommandHandler {
 	private static readonly INSTANCE = new StatusCommandHandler();

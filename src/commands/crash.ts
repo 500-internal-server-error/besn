@@ -1,7 +1,7 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 
-import { Logger } from "../logger";
-import { ICommandHandler } from "../structures";
+import { Logger } from "../logger.js";
+import { ICommandHandler } from "../structures.js";
 
 export class CrashCommandHandler implements ICommandHandler {
 	private static readonly INSTANCE = new CrashCommandHandler();

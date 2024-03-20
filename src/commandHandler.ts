@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, Client, GuildMember } from "discord.js";
 
-import { Logger } from "./logger";
-import { ICommandHandler, ServiceLocation } from "./structures";
+import { Logger } from "./logger.js";
+import { ICommandHandler, ServiceLocation } from "./structures.js";
 
 export class MasterCommandHandler {
 	private static readonly LOGGER = Logger.get("MasterCommandHandler");

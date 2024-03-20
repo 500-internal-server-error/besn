@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { DateTime } from "luxon";
 
-import * as util from "./util";
+import * as util from "./util.js";
 
 export class Logger {
 	// Replace `:` with `.` to avoid file name problems on Windows

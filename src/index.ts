@@ -1,16 +1,16 @@
 import { Client, IntentsBitField } from "discord.js";
 
-import { MasterCommandHandler } from "./commandHandler";
-import { CrashCommandHandler } from "./commands/crash";
-import { DumpConfigCommandHandler } from "./commands/dumpconfig";
-import { ListEventsCommandHandler } from "./commands/listevents";
-import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs";
-import { StatusCommandHandler } from "./commands/status";
-import { UpdatedbCommandHandler } from "./commands/updatedb";
-import { ConfigManager } from "./configManager";
-import { EventReminder, EventReminderEvent } from "./eventReminder";
-import { Logger } from "./logger";
-import { ICommandHandler } from "./structures";
+import { MasterCommandHandler } from "./commandHandler.js";
+import { CrashCommandHandler } from "./commands/crash.js";
+import { DumpConfigCommandHandler } from "./commands/dumpconfig.js";
+import { ListEventsCommandHandler } from "./commands/listevents.js";
+import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs.js";
+import { StatusCommandHandler } from "./commands/status.js";
+import { UpdatedbCommandHandler } from "./commands/updatedb.js";
+import { ConfigManager } from "./configManager.js";
+import { EventReminder, EventReminderEvent } from "./eventReminder.js";
+import { Logger } from "./logger.js";
+import { ICommandHandler } from "./structures.js";
 
 async function main() {
 	const logger = Logger.get("main");
@@ -98,13 +98,14 @@ async function main() {
 	client.login(ConfigManager.getGlobalConfig().token);
 }
 
-(async () => {
-	const logger = Logger.get("_start");
-	try {
-		await main();
-	} catch (e: any) {
-		logger.error("Uncaught exception!");
-		logger.error(`${e.name}: ${e.message}`);
-		logger.error(e.stack);
-	}
-})();
+// (async () => {
+// 	const logger = Logger.get("_start");
+// 	try {
+// 		await main();
+// 	} catch (e: any) {
+// 		logger.error("Uncaught exception!");
+// 		logger.error(`${e.name}: ${e.message}`);
+// 		logger.error(e.stack);
+// 	}
+// })();
+await main(); // todo: fix resource downloader

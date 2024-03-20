@@ -1,9 +1,10 @@
 import { Snowflake } from "discord.js";
 import * as fs from "fs";
-import * as jsonfile from "jsonfile";
+import jsonfile from "jsonfile";
 
-import { Logger } from "./logger";
-import { GlobalConfigFile, ServiceLocation, globalConfigFileSchema, serviceLocationSchema } from "./structures";
+import { Logger } from "./logger.js";
+import { GlobalConfigFile, ServiceLocation, globalConfigFileSchema, serviceLocationSchema } from "./structures.js";
+import * as util from "./util.js";
 
 export class ConfigManager {
 	private static readonly LOGGER = Logger.get("ConfigManager");
