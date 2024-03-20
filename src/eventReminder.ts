@@ -8,6 +8,7 @@ import * as ns from "node-schedule";
 
 import { Logger } from "./logger.js";
 import { VirtualLive } from "./structures.js";
+import * as util from "./util.js";
 
 export const enum EventReminderEvent {
 	StoryStart = "storyStart",
@@ -44,15 +45,8 @@ export class EventReminder {
 
 		this.LOGGER.log("Downloading resources files...");
 		await Promise.allSettled([
-			spawn(
-				`curl -s -o "./run/resources/stories.json" "https://sekai-world.github.io/sekai-master-db-en-diff/events.json"`,
-				{ shell: true }
-			),
-
-			spawn(
-				`curl -s -o "./run/resources/shows.json" "https://sekai-world.github.io/sekai-master-db-en-diff/virtualLives.json"`,
-				{ shell: true }
-			)
+			util.downloadFile("https://sekai-world.github.io/sekai-master-db-en-diff/events.json", "./run/resources/stories.json"),
+			util.downloadFile("https://sekai-world.github.io/sekai-master-db-en-diff/virtualLives.json", "./run/resources/shows.json")
 		]);
 
 		// Afterwards we can setup the scheduler using data from the files we downloaded
