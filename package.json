@@ -1,5 +1,6 @@
 {
   "type": "module",
+  "private": true,
   "dependencies": {
     "discord.js": "^14.14.1",
     "jsonfile": "^6.1.0",
