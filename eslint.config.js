@@ -95,7 +95,7 @@ export default [
 			// @typescript-eslint/eslint-plugin
 
 			...tsEslintPlugin.configs["recommended"].rules,
-			...tsEslintPlugin.configs["recommended-requiring-type-checking"].rules,
+			...tsEslintPlugin.configs["recommended-type-checked"].rules,
 
 			"@typescript-eslint/explicit-member-accessibility": ["error", {
 				"accessibility": "explicit"
