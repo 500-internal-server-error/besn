@@ -1,7 +1,6 @@
 import eslint from "@eslint/js";
 import tsEslintPlugin from "@typescript-eslint/eslint-plugin";
 import tsEslintParser from "@typescript-eslint/parser";
-// import eslintPluginImport from "eslint-plugin-import";
 import globals from "globals";
 
 export default [
@@ -30,7 +29,6 @@ export default [
 
 		plugins: {
 			"@typescript-eslint": tsEslintPlugin,
-			// "eslint-plugin-import": eslintPluginImport,
 		},
 
 		rules: {
@@ -122,48 +120,7 @@ export default [
 			"@typescript-eslint/prefer-ts-expect-error": ["error"],
 			"@typescript-eslint/require-array-sort-compare": ["error", {
 				"ignoreStringArrays": true
-			}],
-
-			/*
-			// eslint-plugin-import
-
-			...eslintPluginImport.configs.recommended,
-			...eslintPluginImport.configs.typescript,
-
-			// Helpful warnings
-
-			"import/no-deprecated": ["error"],
-			"import/no-empty-named-blocks": ["error"],
-
-			// Module systems
-
-			// Static analysis
-
-			"import/no-absolute-path": ["error"],
-			"import/no-self-import": ["error"],
-
-			// Style guide
-
-			"import/first": ["error"],
-			"import/newline-after-import": ["error", {
-				"considerComments": true
-			}],
-			"import/order": ["error", {
-				"groups": [
-					["builtin", "external"],
-					"internal",
-					["parent", "sibling", "index"],
-					"type",
-					"object"
-				],
-				"newlines-between": "always",
-				"alphabetize": {
-					"order": "asc",
-					"orderImportKind": "asc",
-					"caseInsensitive": false
-				}
-			}],
-			*/
+			}]
 		}
 	}
 ];
