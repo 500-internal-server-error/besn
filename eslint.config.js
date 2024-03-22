@@ -1,7 +1,6 @@
 import eslint from "@eslint/js";
 import tsEslintPlugin from "@typescript-eslint/eslint-plugin";
 import tsEslintParser from "@typescript-eslint/parser";
-import eslintConfigPrettier from "eslint-config-prettier";
 // import eslintPluginImport from "eslint-plugin-import";
 import globals from "globals";
 
@@ -165,8 +164,6 @@ export default [
 				}
 			}],
 			*/
-
-			...eslintConfigPrettier.rules
 		}
 	}
 ];
