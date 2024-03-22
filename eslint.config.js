@@ -1,4 +1,5 @@
 import eslint from "@eslint/js";
+import stylistic from "@stylistic/eslint-plugin";
 import tsEslintPlugin from "@typescript-eslint/eslint-plugin";
 import tsEslintParser from "@typescript-eslint/parser";
 import globals from "globals";
@@ -28,6 +29,7 @@ export default [
 		},
 
 		plugins: {
+			"@stylistic": stylistic,
 			"@typescript-eslint": tsEslintPlugin,
 		},
 
@@ -58,7 +60,6 @@ export default [
 				"allowArrowFunctions": true
 			}],
 			"no-eval": ["error", { "allowIndirect": false }],
-			// "no-floating-decimal": ["error"],
 			"no-implied-eval": ["error"],
 			"no-multi-str": ["error"],
 			"no-octal-escape": ["error"],
@@ -82,11 +83,6 @@ export default [
 			"prefer-rest-params": ["error"],
 			"prefer-spread": ["error"],
 			"prefer-template": ["error"],
-			// "quote-props": ["error", "as-needed", {
-			// 	"keywords": true,
-			// 	"unnecessary": true,
-			// 	"numbers": false
-			// }],
 			"radix": ["error", "always"],
 
 			// @typescript-eslint/eslint-plugin
@@ -97,16 +93,6 @@ export default [
 			"@typescript-eslint/explicit-member-accessibility": ["error", {
 				"accessibility": "explicit"
 			}],
-			// "@typescript-eslint/member-delimiter-style": ["error", {
-			// 	"multiline": {
-			// 		"delimiter": "semi",
-			// 		"requireLast": true
-			// 	},
-			// 	"singleline": {
-			// 		"delimiter": "semi",
-			// 		"requireLast": true
-			// 	}
-			// }],
 			"@typescript-eslint/no-inferrable-types": ["off"],
 			"@typescript-eslint/no-require-imports": ["error"],
 			"@typescript-eslint/no-unsafe-declaration-merging": ["error"],
@@ -120,6 +106,25 @@ export default [
 			"@typescript-eslint/prefer-ts-expect-error": ["error"],
 			"@typescript-eslint/require-array-sort-compare": ["error", {
 				"ignoreStringArrays": true
+			}],
+
+			// @stylistic/eslint-plugin
+
+			"@stylistic/no-floating-decimal": ["error"],
+			"@stylistic/quote-props": ["error", "as-needed", {
+				"keywords": true,
+				"unnecessary": true,
+				"numbers": false
+			}],
+			"@stylistic/member-delimiter-style": ["error", {
+				"multiline": {
+					"delimiter": "semi",
+					"requireLast": true
+				},
+				"singleline": {
+					"delimiter": "semi",
+					"requireLast": true
+				}
 			}]
 		}
 	}
