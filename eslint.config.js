@@ -158,7 +158,7 @@ export default [
 			"@stylistic/space-before-blocks": ["error", "always"],
 			"@stylistic/space-before-function-paren": ["error", {
 				"anonymous": "never",
-				"named": "always",
+				"named": "never",
 				"asyncArrow": "always"
 			}],
 			"@stylistic/space-in-parens": ["error", "never"],
