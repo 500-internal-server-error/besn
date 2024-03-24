@@ -4,7 +4,6 @@ import jsonfile from "jsonfile";
 
 import { Logger } from "./logger.js";
 import { GlobalConfigFile, ServiceLocation, globalConfigFileSchema, serviceLocationSchema } from "./structures.js";
-import * as util from "./util.js";
 
 export class ConfigManager {
 	private static readonly LOGGER = Logger.get("ConfigManager");
@@ -41,7 +40,8 @@ export class ConfigManager {
 				this.LOGGER.log(`Reading service location config ${dirFile.name}...`);
 				const config = serviceLocationSchema.parse(jsonfile.readFileSync(`./run/configs/${dirFile.name}`));
 				this.CONFIGS.set(config.guildId, config);
-			} catch (e: any) {
+			} catch (_e: any) {
+				const e = _e as Error;
 				this.LOGGER.error(`${e.name}: ${e.message}`);
 				this.LOGGER.error(`Failed to read config file ${dirFile.name} !`);
 			}

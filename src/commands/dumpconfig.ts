@@ -21,14 +21,16 @@ export class DumpConfigCommandHandler implements ICommandHandler {
 		};
 	}
 
-	public async handle(interaction: ChatInputCommandInteraction) {
+	public handle(interaction: ChatInputCommandInteraction) {
 		const executor = interaction.member as GuildMember;
 		const executorGuild = executor.guild;
-		DumpConfigCommandHandler.LOGGER.log(`${executor.id} requested a dump of server ${executorGuild.id}'s current config!`);
+		DumpConfigCommandHandler.LOGGER.log(
+			`${executor.id} requested a dump of server ${executorGuild.id}'s current config!`
+		);
 
 		const configString = JSON.stringify(ConfigManager.getConfig(executorGuild.id), null, 4);
 
 		DumpConfigCommandHandler.LOGGER.debug(configString);
-		interaction.reply({ content: `\`\`\`json\n${configString}\n\`\`\``, ephemeral: true });
+		void interaction.reply({ content: `\`\`\`json\n${configString}\n\`\`\``, ephemeral: true });
 	}
 }

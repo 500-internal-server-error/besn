@@ -26,22 +26,22 @@ export type GlobalConfigFile = z.infer<typeof globalConfigFileSchema>;
 
 export interface ICommandHandler {
 	getSignature(): ChatInputApplicationCommandData;
-	handle(interaction: ChatInputCommandInteraction): Promise<void>;
+	handle(interaction: ChatInputCommandInteraction): Promise<void> | void;
 }
 
 // Not comprehensive, only includes details we are interested in
 
 export type VirtualLiveSchedule = {
-	virtualLiveId: number,
-	seq: number,
-	startAt: number,
-	endAt: number
-}
+	virtualLiveId: number;
+	seq: number;
+	startAt: number;
+	endAt: number;
+};
 
 export type VirtualLive = {
-	id: number,
-	name: string,
-	startAt: number,
-	endAt: number,
-	virtualLiveSchedules: VirtualLiveSchedule[]
-}
+	id: number;
+	name: string;
+	startAt: number;
+	endAt: number;
+	virtualLiveSchedules: VirtualLiveSchedule[];
+};

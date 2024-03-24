@@ -20,15 +20,17 @@ export class CrashCommandHandler implements ICommandHandler {
 		};
 	}
 
-	public async handle(interaction: ChatInputCommandInteraction) {
+	public handle(interaction: ChatInputCommandInteraction) {
 		const executor = interaction.member as GuildMember;
 		CrashCommandHandler.LOGGER.log(`${executor.id} requested a shutdown!`);
 
 		// TODO: Get the ConfigManager implemented properly
 		if (executor.id !== "503050029078937610") {
-			CrashCommandHandler.LOGGER.log(`${executor.id} tried to issue commands without having the appropriate permission!`);
+			CrashCommandHandler.LOGGER.log(
+				`${executor.id} tried to issue commands without having the appropriate permission!`
+			);
 
-			interaction.reply(
+			void interaction.reply(
 				{
 					content: ":sparkles:     :innocent: :thumbsdown:     :sparkles:",
 					ephemeral: true

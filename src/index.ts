@@ -47,7 +47,7 @@ async function main() {
 		logger.log("Finished registering commands");
 	});
 
-	client.on("interactionCreate", async (interaction) => {
+	client.on("interactionCreate", (interaction) => {
 		if (!interaction.isChatInputCommand()) return;
 
 		masterCommandHandler.handle(interaction);
@@ -55,6 +55,7 @@ async function main() {
 
 	logger.log("Setting up module EventReminder...");
 	await EventReminder.init();
+	/* eslint-disable @typescript-eslint/no-misused-promises */
 	EventReminder.EVENT_EMITTER.on(EventReminderEvent.StoryStart, async (name, startAtSeconds) => {
 		for (const serviceLocation of ConfigManager.getServiceLocations()) {
 			try {
@@ -66,11 +67,17 @@ async function main() {
 				if (!ioChannel.isTextBased()) continue;
 
 				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
-				ioChannel.send(`# Event Starting <t:${startAtSeconds}:R>!\n\n## Event _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
+				let msg = `# Event Starting <t:${startAtSeconds}:R>!\n\n`;
+				msg += `## Event _${name}_ will start at <t:${startAtSeconds}:f>.\n\n`;
+				msg += `<@&${pingRoleId}>`;
+				void ioChannel.send(msg);
 				logger.log(`Announced event at guild ${guild.id}`);
-			} catch (e: any) {
-				logger.error(e.message);
-				logger.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
+			} catch (_e: any) {
+				const e = _e as Error;
+				logger.error(`${e.name}: ${e.message}`);
+				logger.error(
+					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+				);
 			}
 		}
 	});
@@ -85,17 +92,24 @@ async function main() {
 				if (!ioChannel.isTextBased()) continue;
 
 				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
-				ioChannel.send(`# Virtual Live Starting <t:${startAtSeconds}:R>!\n\n## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
+				let msg = `# Virtual Live Starting <t:${startAtSeconds}:R>!\n\n`;
+				msg += `## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n`;
+				msg += `<@&${pingRoleId}>`;
+				void ioChannel.send(msg);
 				logger.log(`Announced event at guild ${guild.id}`);
-			} catch (e: any) {
-				logger.error(e.message);
-				logger.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
+			} catch (_e: any) {
+				const e = _e as Error;
+				logger.error(`${e.name}: ${e.message}`);
+				logger.error(
+					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+				);
 			}
 		}
 	});
+	/* eslint-enable */
 
 	logger.log("Logging in...");
-	client.login(ConfigManager.getGlobalConfig().token);
+	await client.login(ConfigManager.getGlobalConfig().token);
 }
 
 // (async () => {

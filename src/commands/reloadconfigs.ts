@@ -21,7 +21,7 @@ export class ReloadConfigsCommandHandler implements ICommandHandler {
 		};
 	}
 
-	public async handle(interaction: ChatInputCommandInteraction) {
+	public handle(interaction: ChatInputCommandInteraction) {
 		const executor = interaction.member as GuildMember;
 		const executorGuild = executor.guild;
 		ReloadConfigsCommandHandler.LOGGER.log(`${executor.id} requested a reload of configs!`);
@@ -30,6 +30,6 @@ export class ReloadConfigsCommandHandler implements ICommandHandler {
 
 		ReloadConfigsCommandHandler.LOGGER.debug(configString);
 		ConfigManager.loadConfigs();
-		interaction.reply({ content: "Configs reloaded!", ephemeral: true });
+		void interaction.reply({ content: "Configs reloaded!", ephemeral: true });
 	}
 }

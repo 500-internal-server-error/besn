@@ -11,7 +11,7 @@ export function random(minInclusive: number, maxInclusive: number) {
 }
 
 export function getRandomColor() {
-	return random(0, 2**24 - 1);
+	return random(0, 2 ** 24 - 1);
 }
 
 export function openLogFileHandle(fileName: string): fs.WriteStream {
@@ -24,5 +24,9 @@ export async function downloadFile(url: string, out: string) {
 	if (!response.ok) return;
 	if (!response.body) return;
 
-	await finished(Readable.fromWeb(response.body).pipe(fs.createWriteStream(out, { flags: "w", mode: 0o644, autoClose: true })));
+	await finished(
+		Readable
+			.fromWeb(response.body)
+			.pipe(fs.createWriteStream(out, { flags: "w", mode: 0o644, autoClose: true }))
+	);
 }

@@ -89,10 +89,13 @@ export default [
 
 			...tsEslintPlugin.configs["recommended"].rules,
 			...tsEslintPlugin.configs["recommended-type-checked"].rules,
+			...tsEslintPlugin.configs["eslint-recommended"].rules,
 
+			"@typescript-eslint/ban-ts-comment": ["off"],
 			"@typescript-eslint/explicit-member-accessibility": ["error", {
 				"accessibility": "explicit"
 			}],
+			"@typescript-eslint/no-explicit-any": ["off"],
 			"@typescript-eslint/no-inferrable-types": ["off"],
 			"@typescript-eslint/no-require-imports": ["error"],
 			"@typescript-eslint/no-unsafe-declaration-merging": ["error"],
@@ -118,7 +121,7 @@ export default [
 			"@stylistic/keyword-spacing": ["error"],
 			"@stylistic/linebreak-style": ["error", "unix"],
 			"@stylistic/max-len": ["error", {
-				"code": 119,
+				"code": 125,
 				"tabWidth": 4
 			}],
 			"@stylistic/member-delimiter-style": ["error", {

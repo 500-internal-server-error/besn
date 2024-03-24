@@ -43,12 +43,11 @@ export class ListEventsCommandHandler implements ICommandHandler {
 			const eventRemindAtTime = DateTime.fromISO(job.nextInvocation()?.toISOString());
 
 			ListEventsCommandHandler.LOGGER.debug(`Found event "${eventName}":`);
-			ListEventsCommandHandler.LOGGER.debug(`  - job.nextInvocation() = ${job.nextInvocation()}`);
-			ListEventsCommandHandler.LOGGER.debug(`  - eventRemindAtTime = ${eventRemindAtTime}`);
-			ListEventsCommandHandler.LOGGER.debug(`  - eventRemindAtTime.toISO() = ${eventRemindAtTime.toISO()}`);
-			ListEventsCommandHandler.LOGGER.debug(`  - eventRemindAtTime.toSeconds() = ${eventRemindAtTime.toSeconds()}`);
+			ListEventsCommandHandler.LOGGER.debug(`  - job.nextInvocation() = ${job.nextInvocation().toISOString()}`);
+			ListEventsCommandHandler.LOGGER.debug(`  - eventRemindAtTime = ${eventRemindAtTime.toISO()}`);
 
-			reply += `- ${eventName} at <t:${eventRemindAtTime.toSeconds()}:f> / <t:${eventRemindAtTime.toSeconds()}:R>\n`;
+			reply += `- ${eventName} at `;
+			reply += `<t:${eventRemindAtTime.toSeconds()}:f> / <t:${eventRemindAtTime.toSeconds()}:R>\n`;
 			currentReplyMessageLength++;
 
 			if (currentReplyMessageLength > 20) {
