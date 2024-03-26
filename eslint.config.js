@@ -113,7 +113,14 @@ export default [
 
 			// @stylistic/eslint-plugin
 
+			...stylistic.configs["recommended-flat"].rules,
+
+			"@stylistic/arrow-parens": ["error", "always"],
 			"@stylistic/arrow-spacing": ["error"],
+			"@stylistic/brace-style": ["error", "1tbs", {
+				"allowSingleLine": true
+			}],
+			"@stylistic/comma-dangle": ["error", "never"],
 			"@stylistic/computed-property-spacing": ["error"],
 			"@stylistic/dot-location": ["error", "property"],
 			"@stylistic/eol-last": ["error"],
@@ -142,6 +149,7 @@ export default [
 				"maxEOF": 1,
 				"maxBOF": 0
 			}],
+			"@stylistic/no-tabs": ["off"],
 			"@stylistic/no-trailing-spaces": ["error"],
 			"@stylistic/no-whitespace-before-property": ["error"],
 			"@stylistic/nonblock-statement-body-position": ["error"],

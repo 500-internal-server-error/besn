@@ -70,7 +70,7 @@ export class EventReminder {
 		// @ts-expect-error
 		const [stories, shows]: [any[], VirtualLive[]] = (await Promise.allSettled([
 			jsonfile.readFileSync("./run/resources/stories.json"),
-			jsonfile.readFileSync("./run/resources/shows.json"),
+			jsonfile.readFileSync("./run/resources/shows.json")
 		])).map((result) => result.status === "fulfilled" ? result.value : []);
 
 		// We can cancel everything so we start clean

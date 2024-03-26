@@ -17,7 +17,7 @@ export class UpdatedbCommandHandler implements ICommandHandler {
 	public getSignature(): ChatInputApplicationCommandData {
 		return {
 			name: "updatedb",
-			description: "Updates the event and virtual live list",
+			description: "Updates the event and virtual live list"
 		};
 	}
 
