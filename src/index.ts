@@ -66,7 +66,7 @@ async function main() {
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
-				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
+				const pingRoleId = serviceLocation.modules.eventReminder.storyPingRoleId;
 				let msg = `# Event Starting <t:${startAtSeconds}:R>!\n\n`;
 				msg += `## Event _${name}_ will start at <t:${startAtSeconds}:f>.\n\n`;
 				msg += `<@&${pingRoleId}>`;
@@ -91,7 +91,7 @@ async function main() {
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
-				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
+				const pingRoleId = serviceLocation.modules.eventReminder.showPingRoleId;
 				let msg = `# Virtual Live Starting <t:${startAtSeconds}:R>!\n\n`;
 				msg += `## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n`;
 				msg += `<@&${pingRoleId}>`;

@@ -7,7 +7,8 @@ export const serviceLocationSchema = z.object({
 	commandAccessRoleIds: z.array(z.string()),
 	modules: z.object({
 		eventReminder: z.object({
-			pingRoleId: z.string()
+			storyPingRoleId: z.string(),
+			showPingRoleId: z.string()
 		})
 	})
 });
