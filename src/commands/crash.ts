@@ -1,5 +1,6 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 
+import { ConfigManager } from "../configManager.js";
 import { Logger } from "../logger.js";
 import { ICommandHandler } from "../structures.js";
 
@@ -25,7 +26,7 @@ export class CrashCommandHandler implements ICommandHandler {
 		CrashCommandHandler.LOGGER.log(`${executor.id} requested a shutdown!`);
 
 		// TODO: Get the ConfigManager implemented properly
-		if (executor.id !== "503050029078937610") {
+		if (executor.id !== ConfigManager.getGlobalConfig().ownerId) {
 			CrashCommandHandler.LOGGER.log(
 				`${executor.id} tried to issue commands without having the appropriate permission!`
 			);
