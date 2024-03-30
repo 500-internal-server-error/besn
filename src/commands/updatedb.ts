@@ -1,8 +1,8 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 
-import { EventReminder } from "../eventReminder";
-import { ICommandHandler } from "../structures";
-import { Logger } from "../logger";
+import { EventReminder } from "../eventReminder.js";
+import { ICommandHandler } from "../structures.js";
+import { Logger } from "../logger.js";
 
 export class UpdatedbCommandHandler implements ICommandHandler {
 	private static readonly INSTANCE = new UpdatedbCommandHandler();
@@ -17,7 +17,7 @@ export class UpdatedbCommandHandler implements ICommandHandler {
 	public getSignature(): ChatInputApplicationCommandData {
 		return {
 			name: "updatedb",
-			description: "Updates the event and virtual live list",
+			description: "Updates the event and virtual live list"
 		};
 	}
 

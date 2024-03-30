@@ -1,26 +1,23 @@
 import { ChatInputCommandInteraction, Client, GuildMember } from "discord.js";
 
-import { Logger } from "./logger";
-import { ConfigFile, ICommandHandler } from "./structures";
+import { Logger } from "./logger.js";
+import { ICommandHandler, ServiceLocation } from "./structures.js";
 
 export class MasterCommandHandler {
 	private static readonly LOGGER = Logger.get("MasterCommandHandler");
 
 	private client: Client;
-	private config: ConfigFile;
+	private serviceLocations: readonly ServiceLocation[];
 	private commands: ICommandHandler[];
 
-	public constructor(client: Client, config: ConfigFile, commands?: ICommandHandler[]) {
+	public constructor(client: Client, serviceLocations: readonly ServiceLocation[], commands?: ICommandHandler[]) {
 		this.client = client;
-		this.config = config;
+		this.serviceLocations = serviceLocations;
 		this.commands = commands ?? [];
 	}
 
-	public async registerCommands(commands?: ICommandHandler[]) {
-		// If we were passed a new array of commands then we use that
-		this.commands = commands ?? this.commands;
-
-		for (const serviceLocation of this.config.serviceLocationWhitelist) {
+	public async registerCommands() {
+		for (const serviceLocation of this.serviceLocations) {
 			try {
 				// For every guild we plan to serve
 
@@ -37,14 +34,19 @@ export class MasterCommandHandler {
 				MasterCommandHandler.LOGGER.debug(`Adding commands for guild ${serviceLocation.guildId}...`);
 
 				for (const command of this.commands) {
-					MasterCommandHandler.LOGGER.debug(`  - Adding command ${command.getSignature().name} for guild ${serviceLocation.guildId}...`);
-					guild.commands.create(command.getSignature());
+					MasterCommandHandler.LOGGER.debug(
+						`  - Adding command ${command.getSignature().name} for guild ${serviceLocation.guildId}...`
+					);
+					void guild.commands.create(command.getSignature());
 				}
 
 				MasterCommandHandler.LOGGER.debug(`Finished adding commands for guild ${serviceLocation.guildId}`);
-			} catch (e: any) {
+			} catch (_e: any) {
+				const e = _e as Error;
 				MasterCommandHandler.LOGGER.error(`${e.name}: ${e.message}`);
-				MasterCommandHandler.LOGGER.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
+				MasterCommandHandler.LOGGER.error(
+					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+				);
 			}
 		}
 	}
@@ -52,32 +54,35 @@ export class MasterCommandHandler {
 	public async deleteCommands() {
 		this.commands = [];
 
-		for (const serviceLocation of this.config.serviceLocationWhitelist) {
+		for (const serviceLocation of this.serviceLocations) {
 			try {
 				const guild = await this.client.guilds.fetch(serviceLocation.guildId);
 
-				guild.commands.set([]);
-			} catch (e: any) {
+				void guild.commands.set([]);
+			} catch (_e: any) {
+				const e = _e as Error;
 				MasterCommandHandler.LOGGER.error(`${e.name}: ${e.message}`);
-				MasterCommandHandler.LOGGER.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
+				MasterCommandHandler.LOGGER.error(
+					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+				);
 			}
 		}
 	}
 
-	public async handle(interaction: ChatInputCommandInteraction) {
+	public handle(interaction: ChatInputCommandInteraction) {
 		const executor = interaction.member as GuildMember;
 		const executorGuild = interaction.guild;
 
 		// Check if the interaction was issued from a location we service
 
-		const requiredGuild = this.config.serviceLocationWhitelist.filter(
+		const requiredGuild = this.serviceLocations.filter(
 			(serviceLocation) => serviceLocation.guildId === executorGuild?.id
 		);
 
 		if (requiredGuild.length <= 0) {
 			MasterCommandHandler.LOGGER.log(`${executor.id} tried to issue commands without being in a serviced guild!`);
 
-			interaction.reply(
+			void interaction.reply(
 				{
 					content: ":sparkles:     :innocent: :thumbsdown:     :sparkles:",
 					ephemeral: true
@@ -93,9 +98,11 @@ export class MasterCommandHandler {
 		const authorizedRoles = requiredGuild[0].commandAccessRoleIds;
 
 		if (!executorRoles.cache.hasAny(...authorizedRoles)) {
-			MasterCommandHandler.LOGGER.log(`${executor.id} tried to issue commands without having the appropriate permission!`);
+			MasterCommandHandler.LOGGER.log(
+				`${executor.id} tried to issue commands without having the appropriate permission!`
+			);
 
-			interaction.reply(
+			void interaction.reply(
 				{
 					content: ":sparkles:     :innocent: :thumbsdown:     :sparkles:",
 					ephemeral: true
@@ -112,7 +119,7 @@ export class MasterCommandHandler {
 
 		for (const command of this.commands) {
 			if (command.getSignature().name === executorCommand) {
-				command.handle(interaction);
+				void command.handle(interaction);
 				break;
 			}
 		}

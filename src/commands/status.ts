@@ -7,9 +7,9 @@ import {
 } from "discord.js";
 import { DateTime } from "luxon";
 
-import { Logger } from "../logger";
-import { ICommandHandler } from "../structures";
-import * as Util from "../util";
+import { Logger } from "../logger.js";
+import { ICommandHandler } from "../structures.js";
+import * as Util from "../util.js";
 
 export class StatusCommandHandler implements ICommandHandler {
 	private static readonly INSTANCE = new StatusCommandHandler();
@@ -40,6 +40,10 @@ export class StatusCommandHandler implements ICommandHandler {
 		const executor = interaction.member as GuildMember;
 		StatusCommandHandler.LOGGER.log(`${executor.id} requested bot status!`);
 
+		const time = `<t:${DateTime.utc().toUnixInteger()}:f>`;
+		const happyEmoji = "<:mafuyulilguy:1119765248828780687>";
+		const sadEmoji = "<:enajiiempty:1132921144366878730>";
+
 		await interaction.reply({
 			embeds: [
 				new EmbedBuilder()
@@ -52,11 +56,11 @@ export class StatusCommandHandler implements ICommandHandler {
 						},
 						{
 							name: "Time",
-							value: `It _was_ <t:${DateTime.utc().toUnixInteger()}:f>... This ain't instant messaging, though!`
+							value: `It _was_ ${time}... This ain't instant messaging, though!`
 						},
 						{
 							name: "Emotion",
-							value: (interaction.options.getBoolean("gift") ? "OMG GIFT!!! :mafuyulilguy:" : ":enajiiempty:")
+							value: (interaction.options.getBoolean("gift") ? `OMG GIFT!!! ${happyEmoji}` : sadEmoji)
 						}
 					)
 			],

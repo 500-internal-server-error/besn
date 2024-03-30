@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { DateTime } from "luxon";
 
-import * as util from "./util";
+import * as util from "./util.js";
 
 export class Logger {
 	// Replace `:` with `.` to avoid file name problems on Windows
@@ -23,7 +23,7 @@ export class Logger {
 		let out = Logger.reset();
 
 		const timestamp = DateTime.utc().toISO();
-		const formattedMessage = `[${this.prefix} DEBUG]: ${message}`
+		const formattedMessage = `[${this.prefix} DEBUG]: ${message}`;
 
 		out += Logger.brightGreen(timestamp);
 		out += Logger.reset(" ");
@@ -39,7 +39,7 @@ export class Logger {
 		let out = Logger.reset();
 
 		const timestamp = DateTime.utc().toISO();
-		const formattedMessage = `[${this.prefix} LOG]: ${message}`
+		const formattedMessage = `[${this.prefix} LOG]: ${message}`;
 
 		out += Logger.brightGreen(timestamp);
 		out += Logger.reset(" ");
@@ -55,7 +55,7 @@ export class Logger {
 		let out = Logger.reset();
 
 		const timestamp = DateTime.utc().toISO();
-		const formattedMessage = `[${this.prefix} WARN]: ${message}`
+		const formattedMessage = `[${this.prefix} WARN]: ${message}`;
 
 		out += Logger.brightGreen(timestamp);
 		out += Logger.reset(" ");
@@ -71,7 +71,7 @@ export class Logger {
 		let out = Logger.reset();
 
 		const timestamp = DateTime.utc().toISO();
-		const formattedMessage = `[${this.prefix} ERROR]: ${message}`
+		const formattedMessage = `[${this.prefix} ERROR]: ${message}`;
 
 		out += Logger.brightGreen(timestamp);
 		out += Logger.reset(" ");

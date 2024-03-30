@@ -1,14 +1,21 @@
 {
+  "type": "module",
+  "private": true,
   "dependencies": {
     "discord.js": "^14.14.1",
     "jsonfile": "^6.1.0",
     "luxon": "^3.4.4",
-    "node-schedule": "^2.1.1"
+    "node-schedule": "^2.1.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@stylistic/eslint-plugin": "^1.7.0",
     "@types/jsonfile": "^6.1.4",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20.11.13",
-    "@types/node-schedule": "^2.1.5"
+    "@types/node-schedule": "^2.1.5",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.3",
+    "typescript-eslint": "^7.3.1"
   }
 }

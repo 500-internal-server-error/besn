@@ -1,19 +1,21 @@
 import { Client, IntentsBitField } from "discord.js";
-import * as jsonfile from "jsonfile";
 
-import { MasterCommandHandler } from "./commandHandler";
-import { CrashCommandHandler } from "./commands/crash";
-import { ListEventsCommandHandler } from "./commands/listevents";
-import { StatusCommandHandler } from "./commands/status";
-import { UpdatedbCommandHandler } from "./commands/updatedb";
-import { EventReminder, EventReminderEvent } from "./eventReminder";
-import { Logger } from "./logger";
-import { ConfigFile, ICommandHandler } from "./structures";
+import { MasterCommandHandler } from "./commandHandler.js";
+import { CrashCommandHandler } from "./commands/crash.js";
+import { DumpConfigCommandHandler } from "./commands/dumpconfig.js";
+import { ListEventsCommandHandler } from "./commands/listevents.js";
+import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs.js";
+import { StatusCommandHandler } from "./commands/status.js";
+import { UpdatedbCommandHandler } from "./commands/updatedb.js";
+import { ConfigManager } from "./configManager.js";
+import { EventReminder, EventReminderEvent } from "./eventReminder.js";
+import { Logger } from "./logger.js";
+import { ICommandHandler } from "./structures.js";
 
 async function main() {
 	const logger = Logger.get("main");
 
-	const config: ConfigFile = jsonfile.readFileSync("./config.json");
+	ConfigManager.loadConfigs();
 
 	const client = new Client({
 		intents: [
@@ -23,12 +25,14 @@ async function main() {
 
 	const commands: ICommandHandler[] = [
 		CrashCommandHandler.getInstance(),
+		DumpConfigCommandHandler.getInstance(),
 		ListEventsCommandHandler.getInstance(),
 		StatusCommandHandler.getInstance(),
-		UpdatedbCommandHandler.getInstance()
+		UpdatedbCommandHandler.getInstance(),
+		ReloadConfigsCommandHandler.getInstance()
 	];
 
-	const masterCommandHandler = new MasterCommandHandler(client, config, commands);
+	const masterCommandHandler = new MasterCommandHandler(client, ConfigManager.getServiceLocations(), commands);
 
 	client.on("ready", async () => {
 		// Definitely not null since we are responding to the "ready" event,
@@ -43,7 +47,7 @@ async function main() {
 		logger.log("Finished registering commands");
 	});
 
-	client.on("interactionCreate", async (interaction) => {
+	client.on("interactionCreate", (interaction) => {
 		if (!interaction.isChatInputCommand()) return;
 
 		masterCommandHandler.handle(interaction);
@@ -51,8 +55,9 @@ async function main() {
 
 	logger.log("Setting up module EventReminder...");
 	await EventReminder.init();
+	/* eslint-disable @typescript-eslint/no-misused-promises */
 	EventReminder.EVENT_EMITTER.on(EventReminderEvent.StoryStart, async (name, startAtSeconds) => {
-		for (const serviceLocation of config.serviceLocationWhitelist) {
+		for (const serviceLocation of ConfigManager.getServiceLocations()) {
 			try {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
@@ -61,17 +66,23 @@ async function main() {
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
-				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
-				ioChannel.send(`# Event Starting <t:${startAtSeconds}:R>!\n\n## Event _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
+				const pingRoleId = serviceLocation.modules.eventReminder.storyPingRoleId;
+				let msg = `# Event Starting <t:${startAtSeconds}:R>!\n\n`;
+				msg += `## Event _${name}_ will start at <t:${startAtSeconds}:f>.\n\n`;
+				msg += `<@&${pingRoleId}>`;
+				void ioChannel.send(msg);
 				logger.log(`Announced event at guild ${guild.id}`);
-			} catch (e: any) {
-				logger.error(e.message);
-				logger.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
+			} catch (_e: any) {
+				const e = _e as Error;
+				logger.error(`${e.name}: ${e.message}`);
+				logger.error(
+					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+				);
 			}
 		}
 	});
 	EventReminder.EVENT_EMITTER.on(EventReminderEvent.ShowStart, async (name, startAtSeconds) => {
-		for (const serviceLocation of config.serviceLocationWhitelist) {
+		for (const serviceLocation of ConfigManager.getServiceLocations()) {
 			try {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
@@ -80,27 +91,35 @@ async function main() {
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
-				const pingRoleId = serviceLocation.modules.eventReminder.pingRoleId;
-				ioChannel.send(`# Virtual Live Starting <t:${startAtSeconds}:R>!\n\n## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n<@&${pingRoleId}>`);
+				const pingRoleId = serviceLocation.modules.eventReminder.showPingRoleId;
+				let msg = `# Virtual Live Starting <t:${startAtSeconds}:R>!\n\n`;
+				msg += `## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n`;
+				msg += `<@&${pingRoleId}>`;
+				void ioChannel.send(msg);
 				logger.log(`Announced event at guild ${guild.id}`);
-			} catch (e: any) {
-				logger.error(e.message);
-				logger.error(`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`);
+			} catch (_e: any) {
+				const e = _e as Error;
+				logger.error(`${e.name}: ${e.message}`);
+				logger.error(
+					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+				);
 			}
 		}
 	});
+	/* eslint-enable */
 
 	logger.log("Logging in...");
-	client.login(config.token);
+	await client.login(ConfigManager.getGlobalConfig().token);
 }
 
-(async () => {
-	const logger = Logger.get("_start");
-	try {
-		await main();
-	} catch (e: any) {
-		logger.error("Uncaught exception!");
-		logger.error(`${e.name}: ${e.message}`);
-		logger.error(e.stack);
-	}
-})();
+// (async () => {
+// 	const logger = Logger.get("_start");
+// 	try {
+// 		await main();
+// 	} catch (e: any) {
+// 		logger.error("Uncaught exception!");
+// 		logger.error(`${e.name}: ${e.message}`);
+// 		logger.error(e.stack);
+// 	}
+// })();
+await main(); // todo: fix resource downloader

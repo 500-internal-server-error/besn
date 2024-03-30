@@ -1,7 +1,8 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 
-import { Logger } from "../logger";
-import { ICommandHandler } from "../structures";
+import { ConfigManager } from "../configManager.js";
+import { Logger } from "../logger.js";
+import { ICommandHandler } from "../structures.js";
 
 export class CrashCommandHandler implements ICommandHandler {
 	private static readonly INSTANCE = new CrashCommandHandler();
@@ -20,15 +21,17 @@ export class CrashCommandHandler implements ICommandHandler {
 		};
 	}
 
-	public async handle(interaction: ChatInputCommandInteraction) {
+	public handle(interaction: ChatInputCommandInteraction) {
 		const executor = interaction.member as GuildMember;
 		CrashCommandHandler.LOGGER.log(`${executor.id} requested a shutdown!`);
 
 		// TODO: Get the ConfigManager implemented properly
-		if (executor.id !== "503050029078937610") {
-			CrashCommandHandler.LOGGER.log(`${executor.id} tried to issue commands without having the appropriate permission!`);
+		if (executor.id !== ConfigManager.getGlobalConfig().ownerId) {
+			CrashCommandHandler.LOGGER.log(
+				`${executor.id} tried to issue commands without having the appropriate permission!`
+			);
 
-			interaction.reply(
+			void interaction.reply(
 				{
 					content: ":sparkles:     :innocent: :thumbsdown:     :sparkles:",
 					ephemeral: true
