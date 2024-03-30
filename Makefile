@@ -10,7 +10,7 @@ help:
 
 .PHONY: rundev
 rundev:
-	@tsx src/index.ts
+	@npx tsx src/index.ts
 
 .PHONY: clean
 clean:
