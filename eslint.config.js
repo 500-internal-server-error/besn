@@ -100,6 +100,7 @@ export default [
 			"@typescript-eslint/no-require-imports": ["error"],
 			"@typescript-eslint/no-unsafe-declaration-merging": ["error"],
 			"@typescript-eslint/no-unsafe-enum-comparison": ["error"],
+			"@typescript-eslint/no-unused-vars": ["warn"],
 			"@typescript-eslint/parameter-properties": ["error", {
 				"prefer": "class-property"
 			}],
