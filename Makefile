@@ -27,7 +27,6 @@ check:
 build: check
 	@npx tsc
 
-
 .PHONY: pack
 pack: build
 	@docker version > /dev/null 2>&1 || { echo 'Docker Engine is not running'; exit 1; }
