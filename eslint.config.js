@@ -131,6 +131,9 @@ export default [
 				"code": 125,
 				"tabWidth": 4
 			}],
+			"@stylistic/max-statements-per-line": ["warn", {
+				"max": 1
+			}],
 			"@stylistic/member-delimiter-style": ["error", {
 				"multiline": {
 					"delimiter": "semi",
