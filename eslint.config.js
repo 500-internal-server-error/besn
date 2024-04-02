@@ -41,6 +41,7 @@ export default [
 			// Possible Problems
 
 			"no-constructor-return": ["error"],
+			"no-dupe-class-members": ["off"],
 			"no-duplicate-imports": ["error"],
 			"no-new-native-nonconstructor": ["error"],
 			"no-promise-executor-return": ["error"],
