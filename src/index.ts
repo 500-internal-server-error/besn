@@ -55,8 +55,7 @@ async function main() {
 
 	logger.log("Setting up module EventReminder...");
 	await EventReminder.init();
-	/* eslint-disable @typescript-eslint/no-misused-promises */
-	EventReminder.EVENT_EMITTER.on(EventReminderEvent.StoryStart, async (name, startAtSeconds) => {
+	EventReminder.on(EventReminderEvent.StoryStart, async (name, startAt) => {
 		for (const serviceLocation of ConfigManager.getServiceLocations()) {
 			try {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
@@ -67,8 +66,8 @@ async function main() {
 				if (!ioChannel.isTextBased()) continue;
 
 				const pingRoleId = serviceLocation.modules.eventReminder.storyPingRoleId;
-				let msg = `# Event Starting <t:${startAtSeconds}:R>!\n\n`;
-				msg += `## Event _${name}_ will start at <t:${startAtSeconds}:f>.\n\n`;
+				let msg = `# Event Starting <t:${startAt.toSeconds()}:R>!\n\n`;
+				msg += `## Event _${name}_ will start at <t:${startAt.toSeconds()}:f>.\n\n`;
 				msg += `<@&${pingRoleId}>`;
 				void ioChannel.send(msg);
 				logger.log(`Announced event at guild ${guild.id}`);
@@ -81,7 +80,7 @@ async function main() {
 			}
 		}
 	});
-	EventReminder.EVENT_EMITTER.on(EventReminderEvent.ShowStart, async (name, startAtSeconds) => {
+	EventReminder.on(EventReminderEvent.ShowStart, async (name, startAt) => {
 		for (const serviceLocation of ConfigManager.getServiceLocations()) {
 			try {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
@@ -92,9 +91,24 @@ async function main() {
 				if (!ioChannel.isTextBased()) continue;
 
 				const pingRoleId = serviceLocation.modules.eventReminder.showPingRoleId;
-				let msg = `# Virtual Live Starting <t:${startAtSeconds}:R>!\n\n`;
-				msg += `## _${name}_ will start at <t:${startAtSeconds}:f>.\n\n`;
-				msg += `<@&${pingRoleId}>`;
+				let msg = `# Virtual Live Starting <t:${startAt.toSeconds()}:R>!\n\n`;
+				msg += `## _${name}_ will start at <t:${startAt.toSeconds()}:f>.\n\n`;
+				msg += `<@&`;
+				switch (typeof pingRoleId) {
+					case "string": {
+						msg += `${pingRoleId}`;
+					} break;
+
+					case "object": {
+						const startAtHour = `UTC${`${startAt.hour}`.padStart(2, "0")}`;
+						msg += (pingRoleId as { [index: string]: string; })[startAtHour] ?? "0";
+					} break;
+
+					default: {
+						msg += "0";
+					} break;
+				}
+				msg += `>`;
 				void ioChannel.send(msg);
 				logger.log(`Announced event at guild ${guild.id}`);
 			} catch (_e: any) {
@@ -106,7 +120,6 @@ async function main() {
 			}
 		}
 	});
-	/* eslint-enable */
 
 	logger.log("Logging in...");
 	await client.login(ConfigManager.getGlobalConfig().token);

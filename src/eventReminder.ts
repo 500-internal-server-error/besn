@@ -15,12 +15,26 @@ export const enum EventReminderEvent {
 
 export class EventReminder {
 	private static readonly LOGGER = Logger.get("EventReminder");
-	public static readonly EVENT_EMITTER = new EventEmitter();
+	private static readonly EVENT_EMITTER = new EventEmitter();
 
 	private constructor() {}
 
 	public static async init() {
 		await this.refreshResources();
+	}
+
+	public static on(
+		eventName: EventReminderEvent.StoryStart,
+		listener: (name: string, startAt: DateTime) => void | Promise<void>
+	): void;
+
+	public static on(
+		eventName: EventReminderEvent.ShowStart,
+		listener: (name: string, startAt: DateTime) => void | Promise<void>
+	): void;
+
+	public static on(eventName: EventReminderEvent, listener: (...args: any[]) => any): void {
+		this.EVENT_EMITTER.on(eventName, listener);
 	}
 
 	/* eslint-disable
@@ -132,7 +146,7 @@ export class EventReminder {
 			this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
 			const job = ns.scheduleJob(name, actualRemindAtDate.toJSDate(), () => {
-				this.EVENT_EMITTER.emit(EventReminderEvent.StoryStart, name, startAtDate.toSeconds());
+				this.EVENT_EMITTER.emit(EventReminderEvent.StoryStart, name, startAtDate);
 				this.LOGGER.log(`Event fired: Story "${name}" released`);
 				ns.cancelJob(job);
 			});
@@ -188,7 +202,7 @@ export class EventReminder {
 				this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
 				const job = ns.scheduleJob(`${name} #${i + 1}`, actualRemindAtDate.toJSDate(), () => {
-					this.EVENT_EMITTER.emit(EventReminderEvent.ShowStart, name, startAtDate.toSeconds());
+					this.EVENT_EMITTER.emit(EventReminderEvent.ShowStart, name, startAtDate);
 					this.LOGGER.log(`Event fired: Show "${name}" will start at ${startAtDate.toISO()}`);
 					ns.cancelJob(job);
 				});
