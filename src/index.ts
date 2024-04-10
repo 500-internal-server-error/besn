@@ -100,7 +100,7 @@ async function main() {
 					} break;
 
 					case "object": {
-						const startAtHour = `UTC${`${startAt.hour}`.padStart(2, "0")}`;
+						const startAtHour = `UTC${`${startAt.toUTC().hour}`.padStart(2, "0")}`;
 						msg += (pingRoleId as { [index: string]: string; })[startAtHour] ?? "0";
 						logger.debug(`pingRoleId is an object: startAtHour = ${startAtHour}`);
 					} break;
