@@ -111,6 +111,7 @@ async function main() {
 				msg += `>`;
 				void ioChannel.send(msg);
 				logger.log(`Announced event at guild ${guild.id}`);
+				logger.debug(msg);
 			} catch (_e: any) {
 				const e = _e as Error;
 				logger.error(`${e.name}: ${e.message}`);
