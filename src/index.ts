@@ -102,10 +102,12 @@ async function main() {
 					case "object": {
 						const startAtHour = `UTC${`${startAt.hour}`.padStart(2, "0")}`;
 						msg += (pingRoleId as { [index: string]: string; })[startAtHour] ?? "0";
+						logger.debug(`pingRoleId is an object: startAtHour = ${startAtHour}`);
 					} break;
 
 					default: {
 						msg += "0";
+						logger.error(`Something has gone very wrong here, typeof is ${typeof pingRoleId}`);
 					} break;
 				}
 				msg += `>`;
