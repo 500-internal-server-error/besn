@@ -97,6 +97,7 @@ async function main() {
 				switch (typeof pingRoleId) {
 					case "string": {
 						msg += `${pingRoleId}`;
+						logger.debug(`pingRoleId is a string: ${pingRoleId}`);
 					} break;
 
 					case "object": {
