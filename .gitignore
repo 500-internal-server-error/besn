@@ -1,4 +1,5 @@
-build/
-config*.json
-node_modules/
-run/
+/build/**/*
+/configs/**/config*.json
+/config.json
+/node_modules/**/*
+/run/**/*
