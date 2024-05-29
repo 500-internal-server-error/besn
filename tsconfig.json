@@ -5,10 +5,12 @@
 		"module": "nodenext",
 		"moduleResolution": "nodenext",
 		"esModuleInterop": true,
+		"isolatedModules": true,
 
 		"strict": true,
 		"forceConsistentCasingInFileNames": true,
 
+		"noEmit": true,
 		"outDir": "build/",
 		"sourceMap": true,
 
