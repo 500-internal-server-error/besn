@@ -1,5 +1,6 @@
-import { Client, IntentsBitField } from "discord.js";
+import { Client, Events, GuildMember, IntentsBitField } from "discord.js";
 
+import { BoostNotifier } from "./boostNotifier.js";
 import { MasterCommandHandler } from "./commandHandler.js";
 import { CrashCommandHandler } from "./commands/crash.js";
 import { DumpConfigCommandHandler } from "./commands/dumpconfig.js";
@@ -19,7 +20,8 @@ async function main() {
 
 	const client = new Client({
 		intents: [
-			IntentsBitField.Flags.Guilds
+			IntentsBitField.Flags.Guilds,
+			IntentsBitField.Flags.GuildMembers
 		]
 	});
 
@@ -33,8 +35,9 @@ async function main() {
 	];
 
 	const masterCommandHandler = new MasterCommandHandler(client, ConfigManager.getServiceLocations(), commands);
+	const boostNotifier = new BoostNotifier(ConfigManager.getServiceLocations());
 
-	client.on("ready", async () => {
+	client.on(Events.ClientReady, async () => {
 		// Definitely not null since we are responding to the "ready" event,
 		// but ts doesn't know that
 		if (!client.user) return;
@@ -45,12 +48,18 @@ async function main() {
 		logger.log("Registering commands...");
 		await masterCommandHandler.registerCommands();
 		logger.log("Finished registering commands");
+
+		(await client.guilds.fetch()).forEach(async (guild) => await (await guild.fetch()).members.fetch());
 	});
 
 	client.on("interactionCreate", (interaction) => {
 		if (!interaction.isChatInputCommand()) return;
 
 		masterCommandHandler.handle(interaction);
+	});
+
+	client.on(Events.GuildMemberUpdate, (oldMember, newMember) => {
+		boostNotifier.handle(oldMember as GuildMember, newMember).catch((e) => logger.log(`${e}`));
 	});
 
 	logger.log("Setting up module EventReminder...");

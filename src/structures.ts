@@ -24,6 +24,10 @@ export const serviceLocationSchema = z.object({
 					UTC04: z.string()
 				})
 			])
+		}),
+		boostNotifier: z.object({
+			boostRole: z.string(),
+			ioChannelId: z.string()
 		})
 	})
 });
