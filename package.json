@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "discord.js": "^14.14.1",
+    "discord.js": "^14.15.3",
     "jsonfile": "^6.1.0",
     "luxon": "^3.4.4",
     "node-schedule": "^2.1.1",
@@ -19,7 +19,7 @@
     "eslint": "^8.57.0",
     "terser": "^5.31.0",
     "tsx": "^4.7.1",
-    "typescript": "^5.4.3",
+    "typescript": "^5.5.4",
     "typescript-eslint": "^7.3.1"
   }
 }
