@@ -4,8 +4,6 @@ help:
 	@echo '  - help'
 	@echo '  - rundev'
 	@echo '  - clean'
-	@echo '  - check'
-	@echo '  - build'
 	@echo '  - pack'
 
 .PHONY: rundev
@@ -19,17 +17,8 @@ clean:
 	@rm -f config*.json
 	@rm -rf run
 
-.PHONY: check
-check:
-	@npx eslint src
-
-.PHONY: build
-build: check
-	@npx tsc
-
-
 .PHONY: pack
-pack: build
+pack:
 	@docker version > /dev/null 2>&1 || { echo 'Docker Engine is not running'; exit 1; }
 	@docker rmi besn > /dev/null 2>&1 || echo > /dev/null
 	@docker build -t besn .

@@ -8,7 +8,26 @@ export const serviceLocationSchema = z.object({
 	modules: z.object({
 		eventReminder: z.object({
 			storyPingRoleId: z.string(),
-			showPingRoleId: z.string()
+			showPingRoleId: z.union([
+				z.string(),
+				z.object({
+					UTC06: z.string(),
+					UTC07: z.string(),
+					UTC08: z.string(),
+					UTC09: z.string(),
+					UTC11: z.string(),
+					UTC15: z.string(),
+					UTC19: z.string(),
+					UTC21: z.string(),
+					UTC01: z.string(),
+					UTC02: z.string(),
+					UTC04: z.string()
+				})
+			])
+		}),
+		boostNotifier: z.object({
+			boostRole: z.string(),
+			ioChannelId: z.string()
 		})
 	})
 });

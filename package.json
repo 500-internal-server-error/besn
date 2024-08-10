@@ -1,22 +1,23 @@
 {
+  "name": ".",
   "type": "module",
   "private": true,
   "dependencies": {
-    "discord.js": "^14.14.1",
+    "discord.js": "^14.15.3",
     "jsonfile": "^6.1.0",
-    "luxon": "^3.4.4",
+    "luxon": "^3.5.0",
     "node-schedule": "^2.1.1",
-    "zod": "^3.22.4"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^1.7.0",
+    "@stylistic/eslint-plugin": "^2.6.2",
     "@types/jsonfile": "^6.1.4",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^20.11.13",
-    "@types/node-schedule": "^2.1.5",
-    "eslint": "^8.57.0",
-    "tsx": "^4.7.1",
-    "typescript": "^5.4.3",
-    "typescript-eslint": "^7.3.1"
+    "@types/node": "^22.2.0",
+    "@types/node-schedule": "^2.1.7",
+    "eslint": "^9.9.0",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.0.1"
   }
 }

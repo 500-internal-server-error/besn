@@ -41,6 +41,7 @@ export default [
 			// Possible Problems
 
 			"no-constructor-return": ["error"],
+			"no-dupe-class-members": ["off"],
 			"no-duplicate-imports": ["error"],
 			"no-new-native-nonconstructor": ["error"],
 			"no-promise-executor-return": ["error"],
@@ -97,9 +98,13 @@ export default [
 			}],
 			"@typescript-eslint/no-explicit-any": ["off"],
 			"@typescript-eslint/no-inferrable-types": ["off"],
+			"@typescript-eslint/no-misused-promises": ["error", {
+				"checksVoidReturn": false
+			}],
 			"@typescript-eslint/no-require-imports": ["error"],
 			"@typescript-eslint/no-unsafe-declaration-merging": ["error"],
 			"@typescript-eslint/no-unsafe-enum-comparison": ["error"],
+			"@typescript-eslint/no-unused-vars": ["warn"],
 			"@typescript-eslint/parameter-properties": ["error", {
 				"prefer": "class-property"
 			}],
@@ -130,6 +135,9 @@ export default [
 			"@stylistic/max-len": ["error", {
 				"code": 125,
 				"tabWidth": 4
+			}],
+			"@stylistic/max-statements-per-line": ["warn", {
+				"max": 1
 			}],
 			"@stylistic/member-delimiter-style": ["error", {
 				"multiline": {
