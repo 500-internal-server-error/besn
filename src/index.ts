@@ -1,6 +1,6 @@
-import { Client, Events, GuildMember, IntentsBitField } from "discord.js";
+import { Client, Events, IntentsBitField } from "discord.js";
 
-import { BoostNotifier } from "./boostNotifier.js";
+//import { BoostNotifier } from "./boostNotifier.js";
 import { MasterCommandHandler } from "./commandHandler.js";
 import { CrashCommandHandler } from "./commands/crash.js";
 import { DumpConfigCommandHandler } from "./commands/dumpconfig.js";
@@ -35,7 +35,7 @@ async function main() {
 	];
 
 	const masterCommandHandler = new MasterCommandHandler(client, ConfigManager.getServiceLocations(), commands);
-	const boostNotifier = new BoostNotifier(ConfigManager.getServiceLocations());
+	//const boostNotifier = new BoostNotifier(ConfigManager.getServiceLocations());
 
 	client.on(Events.ClientReady, async () => {
 		// Definitely not null since we are responding to the "ready" event,
@@ -49,7 +49,7 @@ async function main() {
 		await masterCommandHandler.registerCommands();
 		logger.log("Finished registering commands");
 
-		(await client.guilds.fetch()).forEach(async (guild) => await (await guild.fetch()).members.fetch());
+		//(await client.guilds.fetch()).forEach(async (guild) => await (await guild.fetch()).members.fetch());
 	});
 
 	client.on("interactionCreate", (interaction) => {
@@ -58,9 +58,11 @@ async function main() {
 		masterCommandHandler.handle(interaction);
 	});
 
+	/*
 	client.on(Events.GuildMemberUpdate, (oldMember, newMember) => {
 		boostNotifier.handle(oldMember as GuildMember, newMember).catch((e) => logger.log(`${e}`));
 	});
+	*/
 
 	logger.log("Setting up module EventReminder...");
 	await EventReminder.init();
