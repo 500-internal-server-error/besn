@@ -38,7 +38,8 @@ RUN [ \
 	"--banner:js=import { createRequire } from 'module';const require = createRequire(import.meta.url);" \
 ]
 
-RUN ["mkdir", "-p", "dist"] # https://github.com/terser/terser/pull/1530
+# https://github.com/terser/terser/pull/1530
+RUN ["mkdir", "-p", "dist"]
 RUN [ \
 	"npx", \
 	"terser", \
