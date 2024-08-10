@@ -42,6 +42,7 @@ export class CrashCommandHandler implements ICommandHandler {
 		}
 
 		// Should probably find a better way to shutdown
+		// eslint-disable-next-line @typescript-eslint/only-throw-error
 		throw "Shutdown Request";
 	}
 }

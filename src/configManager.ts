@@ -28,7 +28,9 @@ export class ConfigManager {
 		try {
 			this.LOGGER.log("Reading service location configs directory...");
 			dirContent = fs.readdirSync("./run/configs/", { withFileTypes: true, recursive: false });
-		} catch (e) {
+		} catch (_e: any) {
+			const e = _e as Error;
+			this.LOGGER.error(`${e.name}: ${e.message}`);
 			this.LOGGER.error("Failed to read service location configs directory!");
 			return;
 		}

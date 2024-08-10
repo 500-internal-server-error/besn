@@ -34,7 +34,11 @@ export class EventReminder {
 	): void;
 
 	public static on(eventName: EventReminderEvent, listener: (...args: any[]) => any): void {
+		// TS fixed an old bug that became a feature so now we need this hack until @types/node fixes it too
+		/* eslint-disable @typescript-eslint/no-unsafe-call */
+		// @ts-expect-error
 		this.EVENT_EMITTER.on(eventName, listener);
+		/* eslint-enable @typescript-eslint/no-unsafe-call */
 	}
 
 	/* eslint-disable
@@ -146,7 +150,11 @@ export class EventReminder {
 			this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
 			const job = ns.scheduleJob(name, actualRemindAtDate.toJSDate(), () => {
+				// TS fixed an old bug that became a feature so now we need this hack until @types/node fixes it too
+				/* eslint-disable @typescript-eslint/no-unsafe-call */
+				// @ts-expect-error
 				this.EVENT_EMITTER.emit(EventReminderEvent.StoryStart, name, startAtDate);
+				/* eslint-enable @typescript-eslint/no-unsafe-call */
 				this.LOGGER.log(`Event fired: Story "${name}" released`);
 				ns.cancelJob(job);
 			});
@@ -202,7 +210,11 @@ export class EventReminder {
 				this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
 				const job = ns.scheduleJob(`${name} #${i + 1}`, actualRemindAtDate.toJSDate(), () => {
+					// TS fixed an old bug that became a feature so now we need this hack until @types/node fixes it too
+					/* eslint-disable @typescript-eslint/no-unsafe-call */
+					// @ts-expect-error
 					this.EVENT_EMITTER.emit(EventReminderEvent.ShowStart, name, startAtDate);
+					/* eslint-enable @typescript-eslint/no-unsafe-call */
 					this.LOGGER.log(`Event fired: Show "${name}" will start at ${startAtDate.toISO()}`);
 					ns.cancelJob(job);
 				});
