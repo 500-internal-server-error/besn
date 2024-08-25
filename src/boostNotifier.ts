@@ -31,14 +31,19 @@ export class BoostNotifier {
 			BoostNotifier.LOGGER.debug(`Now has these roles: ${newMemberRoles.toJSON().toString()}`);
 
 			let message = "";
+			let shouldSend = false;
 			if (!oldMemberRoles.has(boostRoleId) && newMemberRoles.has(boostRoleId)) {
 				message = `<@${oldMember.id}> started boosting the server! :tada:`;
+				shouldSend = true;
 			} else if (oldMemberRoles.has(boostRoleId) && !newMemberRoles.has(boostRoleId)) {
 				message = `<@${oldMember.id}> is no longer boosting the server :broken_heart:`;
+				shouldSend = true;
 			} else if (!oldMemberRoles.has(boostRoleId) && !newMemberRoles.has(boostRoleId)) {
 				message = `<@${oldMember.id}> is not currently boosting the server (unsure whether they were previously)`;
+				shouldSend = false;
 			} else if (oldMemberRoles.has(boostRoleId) && newMemberRoles.has(boostRoleId)) {
 				message = `<@${oldMember.id}> is currently boosting the server (unsure whether they were previously)`;
+				shouldSend = false;
 			}
 
 			const guild = oldMember.guild;
@@ -49,7 +54,7 @@ export class BoostNotifier {
 					`Caught nitro (de)boosting action in guild ${guild.id} caused by user ${oldMember.id}`
 					+ ` but its configured IO channel ${ioChannel?.id} is not a text channel!`
 				);
-			} else if (message.length > 0) {
+			} else if (message.length > 0 && shouldSend) {
 				BoostNotifier.LOGGER.log(message);
 				void (ioChannel as TextChannel).send(message);
 			}
