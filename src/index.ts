@@ -49,7 +49,7 @@ async function main() {
 		await masterCommandHandler.registerCommands();
 		logger.log("Finished registering commands");
 
-		(await client.guilds.fetch()).forEach(async (guild) => await (await guild.fetch()).members.fetch());
+		client.guilds.cache.forEach((guild) => guild.members.fetch());
 	});
 
 	client.on("interactionCreate", (interaction) => {

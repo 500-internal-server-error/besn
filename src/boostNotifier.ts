@@ -38,11 +38,8 @@ export class BoostNotifier {
 			} else if (oldMemberRoles.has(boostRoleId) && !newMemberRoles.has(boostRoleId)) {
 				message = `<@${oldMember.id}> is no longer boosting the server :broken_heart:`;
 				shouldSend = true;
-			} else if (!oldMemberRoles.has(boostRoleId) && !newMemberRoles.has(boostRoleId)) {
-				message = `<@${oldMember.id}> is not currently boosting the server (unsure whether they were previously)`;
-				shouldSend = false;
-			} else if (oldMemberRoles.has(boostRoleId) && newMemberRoles.has(boostRoleId)) {
-				message = `<@${oldMember.id}> is currently boosting the server (unsure whether they were previously)`;
+			} else {
+				message = `<@${oldMember.id}> changed somehow but not the boost role`;
 				shouldSend = false;
 			}
 
