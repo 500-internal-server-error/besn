@@ -23,3 +23,4 @@ pack:
 	@docker rmi besn > /dev/null 2>&1 || echo > /dev/null
 	@docker build -t besn .
 	@docker save -o besn.tar besn
+	@xz -fT0 besn.tar
