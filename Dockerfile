@@ -20,7 +20,6 @@ RUN ["apk", "add", "--no-cache", "--update", "nodejs-current", "npm"]
 COPY . .
 
 RUN ["npm", "ci"]
-RUN ["env"]
 # We need variable expansion but we don't need the shell, so exec it away
 RUN ["sh", "-c", "exec", "npx", "eslint", "$PKGDIR/src"]
 RUN ["npx", "tsc"]
@@ -39,7 +38,6 @@ RUN [ \
 	# https://github.com/evanw/esbuild/issues/1921#issuecomment-1152991694
 	"--banner:js=import { createRequire } from 'module';const require = createRequire(import.meta.url);" \
 ]
-#RUN ["npm", "prune", "--omit=dev"]
 
 ### Stage: Run final image
 
@@ -49,7 +47,6 @@ ENV NODE_ENV="production"
 
 RUN ["apk", "add", "--no-cache", "--update", "nodejs-current"]
 COPY --from=build "$PKGDIR/build" "$PKGDIR/dist"
-#COPY --from=build "$PKGDIR/node_modules" "$PKGDIR/node_modules"
 
 # Again, we want variable expansion but we don't want the shell, exec it away again
 # Also prevent users from overriding CMD
