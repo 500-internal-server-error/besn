@@ -41,10 +41,6 @@ export class EventReminder {
 		/* eslint-enable @typescript-eslint/no-unsafe-call */
 	}
 
-	/* eslint-disable
-		@typescript-eslint/no-unsafe-assignment,
-		@typescript-eslint/no-unsafe-return
-	*/
 	public static async refreshResources() {
 		// Prepare folder to store them in
 		// Wait until we are done (sync), before downloading, otherwise they have nowhere to go
@@ -76,18 +72,11 @@ export class EventReminder {
 		]);
 
 		// Afterwards we can setup the scheduler using data from the files we downloaded
-		// Reads can be conccurent (async), again we don't need to wait for one to finish reading before reading another
-		// But we do again need to wait for all of them to finish
 
 		this.LOGGER.log("Reading resource files...");
 
-		// This should be fine, since we have a default value in case the promise was not fulfilled
-
-		// @ts-expect-error
-		const [stories, shows]: [Story[], VirtualLive[]] = (await Promise.allSettled([
-			jsonfile.readFileSync("./run/resources/stories.json"),
-			jsonfile.readFileSync("./run/resources/shows.json")
-		])).map((result) => result.status === "fulfilled" ? result.value : []);
+		const stories = jsonfile.readFileSync("./run/resources/stories.json", { "throws": false }) as Story[] | null ?? [];
+		const shows = jsonfile.readFileSync("./run/resources/shows.json", { "throws": false }) as VirtualLive[] | null ?? [];
 
 		// We can cancel everything so we start clean
 
@@ -219,7 +208,6 @@ export class EventReminder {
 			}
 		}
 	}
-	/* eslint-enable */
 
 	public static getScheduledEvents() {
 		return ns.scheduledJobs;
