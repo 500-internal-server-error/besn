@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import * as ns from "node-schedule";
 
 import { Logger } from "./logger.js";
-import { VirtualLive } from "./structures.js";
+import { Story, VirtualLive } from "./structures.js";
 import * as util from "./util.js";
 
 export const enum EventReminderEvent {
@@ -42,9 +42,7 @@ export class EventReminder {
 	}
 
 	/* eslint-disable
-		@typescript-eslint/no-unsafe-argument,
 		@typescript-eslint/no-unsafe-assignment,
-		@typescript-eslint/no-unsafe-member-access,
 		@typescript-eslint/no-unsafe-return
 	*/
 	public static async refreshResources() {
@@ -86,7 +84,7 @@ export class EventReminder {
 		// This should be fine, since we have a default value in case the promise was not fulfilled
 
 		// @ts-expect-error
-		const [stories, shows]: [any[], VirtualLive[]] = (await Promise.allSettled([
+		const [stories, shows]: [Story[], VirtualLive[]] = (await Promise.allSettled([
 			jsonfile.readFileSync("./run/resources/stories.json"),
 			jsonfile.readFileSync("./run/resources/shows.json")
 		])).map((result) => result.status === "fulfilled" ? result.value : []);

@@ -51,6 +51,18 @@ export interface ICommandHandler {
 
 // Not comprehensive, only includes details we are interested in
 
+export const enum StoryType {
+	Marathon = "marathon",
+	CheerfulCarnival = "cheerful_carnival"
+}
+
+export type Story = {
+	id: number;
+	name: string;
+	eventType: StoryType;
+	startAt: number;
+};
+
 export type VirtualLiveSchedule = {
 	virtualLiveId: number;
 	seq: number;
