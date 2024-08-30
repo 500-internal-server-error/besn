@@ -27,14 +27,16 @@ export class BoostNotifier {
 			const newMemberRoles = newMember.roles.cache;
 			const boostRoleId = serviceLocation.modules.boostNotifier.boostRole;
 
-			BoostNotifier.LOGGER.debug(`Previously had these roles: ${oldMemberRoles.toJSON().toString()}`);
-			BoostNotifier.LOGGER.debug(`Now has these roles: ${newMemberRoles.toJSON().toString()}`);
+			BoostNotifier.LOGGER.debug(`Previously was:\n${JSON.stringify(oldMember, null, 4)}`);
+			BoostNotifier.LOGGER.debug(`Now is:\n${JSON.stringify(newMember, null, 4)}`);
 
 			let message = "";
 			if (!oldMemberRoles.has(boostRoleId) && newMemberRoles.has(boostRoleId)) {
 				message = `<@${oldMember.id}> started boosting the server! :tada:`;
 			} else if (oldMemberRoles.has(boostRoleId) && !newMemberRoles.has(boostRoleId)) {
 				message = `<@${oldMember.id}> is no longer boosting the server :broken_heart:`;
+			} else {
+				message = `${oldMember.id} changed somehow`;
 			}
 
 			const guild = oldMember.guild;
