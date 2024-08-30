@@ -1,5 +1,5 @@
 /build/**/*
-/besn.tar.xz
+/besn.tar.zstd
 /configs/**/config*.json
 /config.json
 /node_modules/**/*
