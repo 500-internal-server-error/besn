@@ -35,8 +35,6 @@ export class BoostNotifier {
 				message = `<@${oldMember.id}> started boosting the server! :tada:`;
 			} else if (oldMemberRoles.has(boostRoleId) && !newMemberRoles.has(boostRoleId)) {
 				message = `<@${oldMember.id}> is no longer boosting the server :broken_heart:`;
-			} else {
-				message = `${oldMember.id} changed somehow`;
 			}
 
 			const guild = oldMember.guild;
