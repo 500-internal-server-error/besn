@@ -27,8 +27,6 @@ export async function downloadFile(url: string, out: string) {
 	await finished(
 		Readable
 			.fromWeb(response.body)
-			// TS fixed an old bug that became a feature so now we need this hack until @types/node fixes it too
-			// @ts-expect-error
 			.pipe(fs.createWriteStream(out, { flags: "w", mode: 0o644, autoClose: true }))
 	);
 }
