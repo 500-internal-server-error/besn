@@ -92,7 +92,12 @@ export default [
 			...tsEslintPlugin.configs["recommended-type-checked"].rules,
 			...tsEslintPlugin.configs["eslint-recommended"].rules,
 
-			"@typescript-eslint/ban-ts-comment": ["off"],
+			"@typescript-eslint/ban-ts-comment": ["error", {
+				"ts-check": false,
+				"ts-expect-error": true,
+				"ts-ignore": false,
+				"ts-nocheck": false
+			}],
 			"@typescript-eslint/explicit-member-accessibility": ["error", {
 				"accessibility": "explicit"
 			}],
@@ -111,7 +116,6 @@ export default [
 			"@typescript-eslint/prefer-literal-enum-member": ["error"],
 			"@typescript-eslint/prefer-optional-chain": ["error"],
 			"@typescript-eslint/prefer-string-starts-ends-with": ["error"],
-			"@typescript-eslint/prefer-ts-expect-error": ["error"],
 			"@typescript-eslint/require-array-sort-compare": ["error", {
 				"ignoreStringArrays": true
 			}],
