@@ -17,6 +17,18 @@ export class EventReminder {
 	private static readonly LOGGER = Logger.get("EventReminder");
 	private static readonly EVENT_EMITTER = new EventEmitter();
 
+	private static readonly SCHEDULED_EVENTS: ns.Job[] = [];
+	private static readonly RESOURCE_REFRESH_JOB = ns.scheduleJob(
+		"EventReminder_ResourceRefreshJob",
+		DateTime.utc().plus({ hour: 1 }).toJSDate(),
+		async () => {
+			this.LOGGER.log("Refreshing resources...");
+			await this.refreshResources();
+			ns.rescheduleJob(this.RESOURCE_REFRESH_JOB, DateTime.utc().plus({ hour: 1 }).toJSDate());
+			this.LOGGER.log("Finished refreshing resources");
+		}
+	);
+
 	private constructor() {}
 
 	public static async init() {
@@ -77,7 +89,8 @@ export class EventReminder {
 		// We can cancel everything so we start clean
 
 		this.LOGGER.log("Clearing all scheduled events...");
-		await ns.gracefulShutdown();
+		for (const job of this.SCHEDULED_EVENTS.values()) ns.cancelJob(job);
+		this.SCHEDULED_EVENTS.length = 0;
 
 		// Get a current time (msecs since Unix Epoch) to measure everything against
 		const currentTime = DateTime.utc().toMillis();
@@ -137,6 +150,8 @@ export class EventReminder {
 				this.LOGGER.log(`Event fired: Story "${name}" released`);
 				ns.cancelJob(job);
 			});
+
+			this.SCHEDULED_EVENTS.push(job);
 		}
 
 		this.LOGGER.log("Scheduling future shows...");
@@ -193,6 +208,8 @@ export class EventReminder {
 					this.LOGGER.log(`Event fired: Show "${name}" will start at ${startAtDate.toISO()}`);
 					ns.cancelJob(job);
 				});
+
+				this.SCHEDULED_EVENTS.push(job);
 			}
 		}
 	}

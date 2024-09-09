@@ -1,4 +1,6 @@
 import { Client, Events, GuildMember, IntentsBitField } from "discord.js";
+import { DateTime } from "luxon";
+import * as ns from "node-schedule";
 
 import { BoostNotifier } from "./boostNotifier.js";
 import { MasterCommandHandler } from "./commandHandler.js";
@@ -36,6 +38,15 @@ async function main() {
 
 	const masterCommandHandler = new MasterCommandHandler(client, ConfigManager.getServiceLocations(), commands);
 	const boostNotifier = new BoostNotifier(ConfigManager.getServiceLocations());
+
+	const refreshMemberJob = ns.scheduleJob(
+		"Main_GuildMemberRefreshJob",
+		DateTime.utc().plus({ hour: 1 }).toJSDate(),
+		() => {
+			client.guilds.cache.forEach((guild) => guild.members.fetch());
+			ns.rescheduleJob(refreshMemberJob, DateTime.utc().plus({ hour: 1 }).toJSDate());
+		}
+	);
 
 	client.on(Events.ClientReady, async () => {
 		// Definitely not null since we are responding to the "ready" event,
