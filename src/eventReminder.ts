@@ -3,6 +3,7 @@ import * as fs from "fs";
 import jsonfile from "jsonfile";
 import { DateTime } from "luxon";
 import * as ns from "node-schedule";
+import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 
 import { Logger } from "./logger.js";
 import { Story, VirtualLive } from "./structures.js";
@@ -16,23 +17,28 @@ export const enum EventReminderEvent {
 export class EventReminder {
 	private static readonly LOGGER = Logger.get("EventReminder");
 	private static readonly EVENT_EMITTER = new EventEmitter();
+	private static readonly SCHEDULER = new ToadScheduler();
 
 	private static readonly SCHEDULED_EVENTS: ns.Job[] = [];
-	private static readonly RESOURCE_REFRESH_JOB = ns.scheduleJob(
-		"EventReminder_ResourceRefreshJob",
-		DateTime.utc().plus({ hour: 1 }).toJSDate(),
-		async () => {
-			this.LOGGER.log("Refreshing resources...");
-			await this.refreshResources();
-			ns.rescheduleJob(this.RESOURCE_REFRESH_JOB, DateTime.utc().plus({ hour: 1 }).toJSDate());
-			this.LOGGER.log("Finished refreshing resources");
-		}
-	);
 
 	private constructor() {}
 
 	public static async init() {
 		await this.refreshResources();
+
+		this.SCHEDULER.addSimpleIntervalJob(
+			new SimpleIntervalJob(
+				{ hours: 1 },
+				new AsyncTask(
+					"EventReminder: ResourceRefreshJob",
+					async () => {
+						this.LOGGER.log("Refreshing resources...");
+						await this.refreshResources();
+						this.LOGGER.log("Finished refreshing resources");
+					}
+				)
+			)
+		);
 	}
 
 	public static on(
@@ -145,7 +151,7 @@ export class EventReminder {
 
 			this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
-			const job = ns.scheduleJob(name, actualRemindAtDate.toJSDate(), () => {
+			const job = ns.scheduleJob(`EventReminder: ${name}`, actualRemindAtDate.toJSDate(), () => {
 				this.EVENT_EMITTER.emit(EventReminderEvent.StoryStart, name, startAtDate);
 				this.LOGGER.log(`Event fired: Story "${name}" released`);
 				ns.cancelJob(job);
@@ -203,7 +209,7 @@ export class EventReminder {
 
 				this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
-				const job = ns.scheduleJob(`${name} #${i + 1}`, actualRemindAtDate.toJSDate(), () => {
+				const job = ns.scheduleJob(`EventReminder: ${name} #${i + 1}`, actualRemindAtDate.toJSDate(), () => {
 					this.EVENT_EMITTER.emit(EventReminderEvent.ShowStart, name, startAtDate);
 					this.LOGGER.log(`Event fired: Show "${name}" will start at ${startAtDate.toISO()}`);
 					ns.cancelJob(job);

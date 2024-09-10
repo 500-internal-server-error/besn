@@ -1,6 +1,5 @@
-import { Client, Events, GuildMember, IntentsBitField } from "discord.js";
-import { DateTime } from "luxon";
-import * as ns from "node-schedule";
+import { Client, Collection, Events, GuildMember, IntentsBitField, Snowflake } from "discord.js";
+import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 
 import { BoostNotifier } from "./boostNotifier.js";
 import { MasterCommandHandler } from "./commandHandler.js";
@@ -39,13 +38,21 @@ async function main() {
 	const masterCommandHandler = new MasterCommandHandler(client, ConfigManager.getServiceLocations(), commands);
 	const boostNotifier = new BoostNotifier(ConfigManager.getServiceLocations());
 
-	const refreshMemberJob = ns.scheduleJob(
-		"Main_GuildMemberRefreshJob",
-		DateTime.utc().plus({ hour: 1 }).toJSDate(),
-		() => {
-			client.guilds.cache.forEach((guild) => guild.members.fetch());
-			ns.rescheduleJob(refreshMemberJob, DateTime.utc().plus({ hour: 1 }).toJSDate());
-		}
+	const refreshMemberJobScheduler = new ToadScheduler();
+	refreshMemberJobScheduler.addSimpleIntervalJob(
+		new SimpleIntervalJob(
+			{ hours: 1 },
+			new AsyncTask(
+				"Main: GuildMemberRefreshJob",
+				async () => {
+					logger.log("Refreshing GuildMember cache...");
+					const fetches: Promise<Collection<Snowflake, GuildMember>>[] = [];
+					client.guilds.cache.forEach((guild) => fetches.push(guild.members.fetch()));
+					await Promise.allSettled(fetches);
+					logger.log("Finished refreshing GuildMember cache");
+				}
+			)
+		)
 	);
 
 	client.on(Events.ClientReady, async () => {
