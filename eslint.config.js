@@ -93,10 +93,10 @@ export default [
 			...tsEslintPlugin.configs["eslint-recommended"].rules,
 
 			"@typescript-eslint/ban-ts-comment": ["error", {
-				"ts-check": false,
-				"ts-expect-error": true,
-				"ts-ignore": false,
-				"ts-nocheck": false
+				"ts-check": true,
+				"ts-expect-error": false,
+				"ts-ignore": true,
+				"ts-nocheck": true
 			}],
 			"@typescript-eslint/explicit-member-accessibility": ["error", {
 				"accessibility": "explicit"
