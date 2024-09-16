@@ -167,9 +167,9 @@ export default [
 			"@stylistic/nonblock-statement-body-position": ["error"],
 			"@stylistic/padded-blocks": ["error", "never"],
 			"@stylistic/quote-props": ["error", "as-needed", {
-				"keywords": true,
+				"keywords": false,
 				"unnecessary": true,
-				"numbers": false
+				"numbers": true
 			}],
 			"@stylistic/quotes": ["error", "double", {
 				"allowTemplateLiterals": true
