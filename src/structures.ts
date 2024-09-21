@@ -1,6 +1,15 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction } from "discord.js";
 import { z } from "zod";
 
+export const enum ExitCode {
+	Ok,
+	Unknown,
+	BadOption,
+	BadGlobalConfig,
+	BadConfigsDir,
+	BadLogFile
+}
+
 export const serviceLocationSchema = z.object({
 	guildId: z.string(),
 	ioChannelId: z.string(),
