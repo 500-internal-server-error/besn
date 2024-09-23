@@ -1,20 +1,40 @@
+import { Client, IntentsBitField } from "discord.js";
+
 import { Logger } from "./logger2.js";
 import { ConfigManager } from "./configManager2.js";
 import { ExitCode } from "./structures.js";
+import { MasterCommandHandler } from "./commandHandler2.js";
 
 export class Besn {
 	private readonly logger: Logger;
 
-	private readonly configManager: ConfigManager;
+	private readonly client: Client;
 
-	public constructor(globalConfigFilePath: string, configsDirPath: string, logger: Logger) {
+	private readonly configManager: ConfigManager;
+	private readonly commandHandler: MasterCommandHandler;
+
+	public constructor(
+		logger: Logger,
+
+		globalConfigFilePath: string,
+		configsDirPath: string
+	) {
 		this.logger = logger;
+
+		this.client = new Client({
+			intents: [
+				IntentsBitField.Flags.Guilds,
+				IntentsBitField.Flags.GuildMembers
+			]
+		});
 
 		this.configManager = new ConfigManager(
 			this.logger.fork("ConfigManager"),
 			globalConfigFilePath,
 			configsDirPath
 		);
+
+		this.commandHandler = new MasterCommandHandler(this.logger.fork("MasterCommandHandler"), this.client);
 	}
 
 	private loadGlobalConfig() {
@@ -23,6 +43,10 @@ export class Besn {
 
 	private loadConfigs() {
 		return this.configManager.loadConfigs();
+	}
+
+	private addCommand() {
+		// this.commandHandler.
 	}
 
 	public run() {

@@ -98,9 +98,10 @@ function main(args: readonly string[]) {
 	logger.setLogWriter(compositeLogWriter);
 
 	const besn = new Besn(
+		logger.fork("Besn"),
+
 		globalConfigFilePath,
-		configsDirPath,
-		logger
+		configsDirPath
 	);
 
 	return besn.run();
