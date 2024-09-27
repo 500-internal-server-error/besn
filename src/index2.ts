@@ -1,19 +1,29 @@
+import { Client, IntentsBitField } from "discord.js";
 import { DateTime } from "luxon";
 import * as path from "path";
 
 import { Besn } from "./besn.js";
+import { ConfigManager } from "./configManager2.js";
+import { MasterCommandHandler } from "./commandHandler2.js";
+// import { CrashCommandHandler } from "./commands/crash.js";
+// import { DumpConfigCommandHandler } from "./commands/dumpconfig.js";
+// import { ListEventsCommandHandler } from "./commands/listevents.js";
+import { StatusCommandHandler } from "./commands/status2.js";
+// import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs.js";
+// import { UpdatedbCommandHandler } from "./commands/updatedb.js";
 import { CompositeLogWriter, ConsoleLogWriter, FileBasedLogWriter, Logger } from "./logger2.js";
 import { ExitCode } from "./structures.js";
 import * as util from "./util.js";
 
 function main(args: readonly string[]) {
-	const consoleLogWriter = new ConsoleLogWriter();
-	const logger = new Logger("main", consoleLogWriter);
+	// Set default settings
 
 	const settings = {
 		selfContained: process.env["NODE_ENV"] === "production" ? false : true,
 		win32LogFix: process.platform === "win32" ? true : false
 	};
+
+	// Parse args
 
 	for (let i = 0; i < args.length; i++) {
 		if (!args[i].startsWith("-")) continue;
@@ -77,6 +87,15 @@ function main(args: readonly string[]) {
 		}
 	}
 
+	// Setup logger, part 1
+	// The console is all we have right now, the log file is not ready
+
+	const consoleLogWriter = new ConsoleLogWriter();
+	const logger = new Logger("main", consoleLogWriter);
+
+	// Setup logger, part 2
+	// Determine the log file to use, look at the settings
+
 	const baseLogFileName = `${DateTime.utc().toISO()}.log`;
 	const logFileName = settings.win32LogFix ? baseLogFileName.replaceAll(":", ".") : baseLogFileName;
 
@@ -90,18 +109,73 @@ function main(args: readonly string[]) {
 	} catch (_e: any) {
 		const e = _e as Error;
 
-		logger.error(`Failed to open log file! Error: ${e.message}`);
+		logger.error(`Failed to open log file! ${e.name}: ${e.message}`);
 		return ExitCode.BadLogFile;
 	}
+
+	// Setup logger, part 3
+	// We now have a file, extend the logger
 
 	const compositeLogWriter = new CompositeLogWriter([consoleLogWriter, fileBasedLogWriter]);
 	logger.setLogWriter(compositeLogWriter);
 
+	// Log settings
+	// Slight detour
+
+	logger.debug(`Using settings:\n${JSON.stringify(settings, null, 4)}`);
+
+	// Setup discord client
+
+	const client = new Client({
+		intents: [
+			IntentsBitField.Flags.Guilds,
+			IntentsBitField.Flags.GuildMembers
+		]
+	});
+
+	// Setup config manager
+	// It might not be able to load the configs
+
+	const configManager = new ConfigManager(logger.fork("ConfigManager"), globalConfigFilePath, configsDirPath);
+
+	if (!configManager.loadGlobalConfig()) {
+		logger.error("Failed to load global config!");
+		return ExitCode.BadGlobalConfig;
+	}
+
+	const [configManagerErrored, configManagerErrors] = configManager.loadConfigs();
+	if (configManagerErrored) {
+		let out = "Failed to load some service location configs! Errors:\n";
+		for (const configManagerError of configManagerErrors) {
+			out += `${configManagerError.name}: ${configManagerError.message}\n`;
+		}
+
+		logger.warn(out);
+	}
+
+	// Setup modules: command handler
+
+	const commandHandler = new MasterCommandHandler(
+		logger.fork("MasterCommandHandler"),
+		client,
+		configManager.getServiceLocations(),
+		[
+			// CrashCommandHandler.getInstance(),
+			// DumpConfigCommandHandler.getInstance(),
+			// ListEventsCommandHandler.getInstance(),
+			new StatusCommandHandler(logger.fork("StatusCommandHandler"))
+			// UpdatedbCommandHandler.getInstance(),
+			// ReloadConfigsCommandHandler.getInstance()
+		]);
+
+	// Construct and run bot
+
 	const besn = new Besn(
 		logger.fork("Besn"),
+		client,
 
-		globalConfigFilePath,
-		configsDirPath
+		configManager,
+		commandHandler
 	);
 
 	return besn.run();

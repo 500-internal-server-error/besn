@@ -7,27 +7,19 @@ export class MasterCommandHandler {
 	private readonly logger: Logger;
 	private readonly client: Client;
 
-	private serviceLocations: ServiceLocation[];
-	private commands: ICommandHandler[];
+	private readonly serviceLocations: readonly ServiceLocation[];
+	private readonly commands: readonly ICommandHandler[];
 
 	public constructor(
 		logger: Logger,
 		client: Client,
-		serviceLocations?: ServiceLocation[],
-		commandHandlers?: ICommandHandler[]
+		serviceLocations: readonly ServiceLocation[],
+		commandHandlers: readonly ICommandHandler[]
 	) {
 		this.logger = logger;
 		this.client = client;
-		this.serviceLocations = serviceLocations ?? [];
-		this.commands = commandHandlers ?? [];
-	}
-
-	public addServiceLocation(serviceLocation: ServiceLocation) {
-		this.serviceLocations.push(serviceLocation);
-	}
-
-	public addCommand(commandHandler: ICommandHandler) {
-		this.commands.push(commandHandler);
+		this.serviceLocations = serviceLocations;
+		this.commands = commandHandlers;
 	}
 
 	public async registerCommands() {
@@ -64,22 +56,12 @@ export class MasterCommandHandler {
 			}
 		}
 	}
+}
 
-	public async deleteCommands() {
-		this.commands = [];
+export abstract class CommandHandler {
+	protected readonly logger: Logger;
 
-		for (const serviceLocation of this.serviceLocations) {
-			try {
-				const guild = await this.client.guilds.fetch(serviceLocation.guildId);
-
-				void guild.commands.set([]);
-			} catch (_e: any) {
-				const e = _e as Error;
-				this.logger.error(`${e.name}: ${e.message}`);
-				this.logger.error(
-					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
-				);
-			}
-		}
+	public constructor(logger: Logger) {
+		this.logger = logger;
 	}
 }

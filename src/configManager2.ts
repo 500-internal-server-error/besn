@@ -57,12 +57,12 @@ export class ConfigManager {
 				this.logger.log(`Finished loading service location config '${dirFileFullName}'`);
 			} catch (_e: any) {
 				const e = _e as Error;
-				this.logger.error(`Failed to load service location config '${dirFileFullName}'! Error: ${e.message}`);
+				this.logger.error(`Failed to load service location config '${dirFileFullName}'! ${e.name}: ${e.message}`);
 				errors.push(e);
 			}
 		}
 
-		return [true, errors];
+		return [errors.length > 0, errors];
 	}
 
 	public getGlobalConfig(): Readonly<GlobalConfigFile> | null {
