@@ -166,7 +166,8 @@ async function main(args: readonly string[]): Promise<number> {
 			new StatusCommandHandler(logger.fork("StatusCommandHandler"))
 			// UpdatedbCommandHandler.getInstance(),
 			// ReloadConfigsCommandHandler.getInstance()
-		]);
+		]
+	);
 
 	// Construct and run bot
 
