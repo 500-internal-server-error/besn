@@ -15,7 +15,7 @@ import { CompositeLogWriter, ConsoleLogWriter, FileBasedLogWriter, Logger } from
 import { ExitCode } from "./structures.js";
 import * as util from "./util.js";
 
-function main(args: readonly string[]) {
+async function main(args: readonly string[]): Promise<number> {
 	// Set default settings
 
 	const settings = {
@@ -178,7 +178,10 @@ function main(args: readonly string[]) {
 		commandHandler
 	);
 
-	return besn.run();
+	await besn.login(configManager.getGlobalConfig().token);
+	besn.registerCommands();
+
+	return 0;
 }
 
-process.exitCode = main(process.argv.slice(1));
+process.exitCode = await main(process.argv.slice(1));

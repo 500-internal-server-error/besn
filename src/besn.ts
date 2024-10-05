@@ -3,7 +3,6 @@ import { Client } from "discord.js";
 import { MasterCommandHandler } from "./commandHandler2.js";
 import { ConfigManager } from "./configManager2.js";
 import { Logger } from "./logger2.js";
-import { ExitCode } from "./structures.js";
 
 export class Besn {
 	private readonly logger: Logger;
@@ -34,7 +33,7 @@ export class Besn {
 		this.logger.debug("Finished registering commands");
 	}
 
-	public run() {
-		return ExitCode.Ok;
+	public login(token: string) {
+		return this.client.login(token);
 	}
 }

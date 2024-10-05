@@ -5,13 +5,15 @@ import jsonfile from "jsonfile";
 import { Logger } from "./logger2.js";
 import { GlobalConfigFile, ServiceLocation, globalConfigFileSchema, serviceLocationSchema } from "./structures.js";
 
-export class ConfigManager {
+// Dark magic from https://stackoverflow.com/a/79054711
+
+export class ConfigManager<_T extends null = null> {
 	private readonly logger: Logger;
 
 	private readonly globalConfigFilePath: string;
 	private readonly configsDirPath: string;
 
-	private globalConfig: GlobalConfigFile | null;
+	private globalConfig: GlobalConfigFile | _T;
 	private configs: Map<Snowflake, ServiceLocation>;
 
 	public constructor(logger: Logger, globalConfigFilePath: string, configsDirPath: string) {
@@ -19,11 +21,11 @@ export class ConfigManager {
 		this.globalConfigFilePath = globalConfigFilePath;
 		this.configsDirPath = configsDirPath;
 
-		this.globalConfig = null;
+		this.globalConfig = null as _T;
 		this.configs = new Map();
 	}
 
-	public loadGlobalConfig() {
+	public loadGlobalConfig(): this is ConfigManager<never> {
 		try {
 			this.logger.log("Loading global config...");
 			this.globalConfig = globalConfigFileSchema.parse(jsonfile.readFileSync(this.globalConfigFilePath));
@@ -65,7 +67,7 @@ export class ConfigManager {
 		return [errors.length > 0, errors];
 	}
 
-	public getGlobalConfig(): Readonly<GlobalConfigFile> | null {
+	public getGlobalConfig(): Readonly<GlobalConfigFile> | _T {
 		return this.globalConfig;
 	}
 
