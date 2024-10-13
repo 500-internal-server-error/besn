@@ -140,3 +140,61 @@ export class Logger {
 		this.logWriter.write(new LogEvent(DateTime.utc().toMillis(), this.prefix, LogLevel.Error, message));
 	}
 }
+
+/**
+ * Convenience class for creating {@linkcode Logger}s with a default {@linkcode ILogWriter} instead of creating them
+ * manually
+ */
+export class LoggerFactory {
+	private static DEFAULT_LOG_WRITER: ILogWriter = new ConsoleLogWriter();
+	private static DEFAULT_LOGGER: Logger = new Logger(`${this.name} (default)`, this.DEFAULT_LOG_WRITER);
+
+	private constructor() {}
+
+	/**
+	 * Convenience method to initialize a {@linkcode CompositeLogWriter} containing a {@linkcode ConsoleLogWriter} and
+	 * {@linkcode FileBasedLogWriter} for all future {@linkcode Logger}s created by {@linkcode LoggerFactory.get}
+	 * @param logFilePath Path to the file to be used as a log file
+	 * @returns None if initialization succeeded, i.e., initializing the {@linkcode FileBasedLogWriter} succeeded,
+	 * otherwise returns the error
+	 */
+	public static init(
+		logFilePath: string
+	): Error | void {
+		const consoleLogWriter = new ConsoleLogWriter();
+		let fileBasedLogWriter: FileBasedLogWriter;
+		try {
+			fileBasedLogWriter = FileBasedLogWriter.openFile(logFilePath);
+		} catch (e) {
+			if (!(e instanceof Error)) throw e;
+
+			this.DEFAULT_LOGGER.error(`Failed to open log file! ${e.name}: ${e.message}`);
+			return e;
+		}
+		const compositeLogWriter = new CompositeLogWriter([consoleLogWriter, fileBasedLogWriter]);
+
+		this.DEFAULT_LOG_WRITER = compositeLogWriter;
+	}
+
+	/**
+	 * Change the default {@linkcode ILogWriter} to use for all future {@linkcode Logger}s created by
+	 * {@linkcode LoggerFactory.get}
+	 * @param defaultLogWriter The {@linkcode ILogWriter} to use as a default
+	 * @returns None
+	 */
+	public static setDefaultLogWriter(defaultLogWriter: ILogWriter) {
+		this.DEFAULT_LOG_WRITER = defaultLogWriter;
+	}
+
+	/**
+	 * Create a {@linkcode Logger} with the given prefix. Optionally accepts an {@linkcode ILogWriter} to use, otherwise
+	 * a default one is used, configurable using {@linkcode LoggerFactory.setDefaultLogWriter}.
+	 * @param prefix The new {@linkcode Logger}'s prerix
+	 * @param logWriter The new {@linkcode Logger}'s {@linkcode ILogWriter}
+	 * @returns The new {@linkcode Logger}
+	 */
+	public static get(prefix: string, logWriter?: ILogWriter) {
+		if (!logWriter) return this.DEFAULT_LOGGER.fork(prefix);
+		return new Logger(prefix, logWriter);
+	}
+}
