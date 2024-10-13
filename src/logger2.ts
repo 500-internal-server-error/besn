@@ -115,7 +115,12 @@ export class Logger {
 		this.logWriter = logWriter;
 	}
 
-	public fork(prefix: string) {
+	/**
+	 * Creates a new {@linkcode Logger} with the same {@linkcode ILogWriter}
+	 * @param prefix New {@linkcode Logger}'s prefix
+	 * @returns New {@linkcode Logger} with the requested name and the same {@linkcode ILogWriter}
+	 */
+	public fork(prefix: string): Logger {
 		return new Logger(prefix, this.logWriter);
 	}
 
