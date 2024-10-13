@@ -10,11 +10,15 @@
 		"isolatedModules": true,
 
 		"strict": true,
+		"exactOptionalPropertyTypes": true,
 		"forceConsistentCasingInFileNames": true,
+		"noFallthroughCasesInSwitch": true,
 		"noImplicitOverride": true,
 
 		"outDir": "build/",
 		"sourceMap": true,
+		"inlineSources": false,
+		"removeComments": true,
 
 		"skipLibCheck": true
 	},
