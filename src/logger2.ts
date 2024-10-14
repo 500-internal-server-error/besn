@@ -117,7 +117,9 @@ export class Logger {
 
 	/**
 	 * Creates a new {@linkcode Logger} with the same {@linkcode ILogWriter}
+	 *
 	 * @param prefix New {@linkcode Logger}'s prefix
+	 *
 	 * @returns New {@linkcode Logger} with the requested name and the same {@linkcode ILogWriter}
 	 */
 	public fork(prefix: string): Logger {
@@ -154,7 +156,9 @@ export class LoggerFactory {
 	/**
 	 * Convenience method to initialize a {@linkcode CompositeLogWriter} containing a {@linkcode ConsoleLogWriter} and
 	 * {@linkcode FileBasedLogWriter} for all future {@linkcode Logger}s created by {@linkcode LoggerFactory.get}
+	 *
 	 * @param logFilePath Path to the file to be used as a log file
+	 *
 	 * @returns None if initialization succeeded, i.e., initializing the {@linkcode FileBasedLogWriter} succeeded,
 	 * otherwise returns the error
 	 */
@@ -179,7 +183,9 @@ export class LoggerFactory {
 	/**
 	 * Change the default {@linkcode ILogWriter} to use for all future {@linkcode Logger}s created by
 	 * {@linkcode LoggerFactory.get}
+	 *
 	 * @param defaultLogWriter The {@linkcode ILogWriter} to use as a default
+	 *
 	 * @returns None
 	 */
 	public static setDefaultLogWriter(defaultLogWriter: ILogWriter) {
@@ -189,8 +195,10 @@ export class LoggerFactory {
 	/**
 	 * Create a {@linkcode Logger} with the given prefix. Optionally accepts an {@linkcode ILogWriter} to use, otherwise
 	 * a default one is used, configurable using {@linkcode LoggerFactory.setDefaultLogWriter}.
+	 *
 	 * @param prefix The new {@linkcode Logger}'s prerix
 	 * @param logWriter The new {@linkcode Logger}'s {@linkcode ILogWriter}
+	 *
 	 * @returns The new {@linkcode Logger}
 	 */
 	public static get(prefix: string, logWriter?: ILogWriter) {
