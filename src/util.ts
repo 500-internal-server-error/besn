@@ -76,3 +76,27 @@ export function getStateHome() {
 
 	throw new Error("Unable to determine log directory");
 }
+
+/**
+ * Convenience class for use in runtime "asserts"
+ */
+export class UninitializedClassError extends Error {
+	public constructor(className: string, options?: ErrorOptions);
+	public constructor(className: string, propertyName?: string, options?: ErrorOptions);
+	public constructor(className: string, propertyNameOrOptions?: string | ErrorOptions, maybeOptions?: ErrorOptions) {
+		let message: string;
+		let options: ErrorOptions | undefined;
+
+		if (typeof propertyNameOrOptions === "string") {
+			const propertyName = propertyNameOrOptions;
+			message = `Use of uninitialized property ${propertyName} on class ${className}!`;
+			options = maybeOptions;
+		} else {
+			message = `Use of uninitialized class ${className}!`;
+			if (propertyNameOrOptions) options = propertyNameOrOptions;
+			options = maybeOptions;
+		}
+
+		super(message, options);
+	}
+}
