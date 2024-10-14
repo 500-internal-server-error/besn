@@ -100,3 +100,16 @@ export class UninitializedClassError extends Error {
 		super(message, options);
 	}
 }
+
+/**
+ * Utility hack used to get a stringified variable name. Useful to avoid stale strings when renaming variables.
+ *
+ * @see https://stackoverflow.com/a/66935761
+ *
+ * @param f Function that returns the variable whose name is to be stringified, specifically in the format `() => name`
+ *
+ * @returns Stringified version of return value of the input function
+ */
+export function nameof(f: () => any) {
+	return f.toString().replace(/[ |()=>]/g, "");
+}
