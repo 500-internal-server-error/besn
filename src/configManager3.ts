@@ -9,8 +9,8 @@ import { nameof, UninitializedClassError } from "./util.js";
 export class ConfigManager {
 	private static LOGGER?: Logger = undefined;
 
-	private static GLOBAL_CONFIG?: GlobalConfigFile = undefined;
-	private static CONFIGS?: Map<Snowflake, ServiceLocation> = undefined;
+	private static GLOBAL_CONFIG?: Readonly<GlobalConfigFile> = undefined;
+	private static CONFIGS?: Map<Snowflake, Readonly<ServiceLocation>> = undefined;
 
 	private constructor() {}
 
@@ -61,7 +61,7 @@ export class ConfigManager {
 	 *
 	 * @returns None
 	 */
-	public static setGlobalConfig(globalConfig: GlobalConfigFile) {
+	public static setGlobalConfig(globalConfig: Readonly<GlobalConfigFile>) {
 		this.GLOBAL_CONFIG = globalConfig;
 	}
 
@@ -72,7 +72,7 @@ export class ConfigManager {
 	 *
 	 * @returns None
 	 */
-	public static setConfigs(serviceLocations: ServiceLocation[]) {
+	public static setConfigs(serviceLocations: readonly ServiceLocation[]) {
 		if (!this.CONFIGS) this.CONFIGS = new Map<Snowflake, ServiceLocation>();
 		this.CONFIGS.clear();
 		for (const serviceLocation of serviceLocations) this.CONFIGS.set(serviceLocation.guildId, serviceLocation);
