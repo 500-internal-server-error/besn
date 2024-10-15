@@ -4,7 +4,7 @@ import jsonfile from "jsonfile";
 
 import { Logger } from "./logger2.js";
 import { GlobalConfigFile, globalConfigFileSchema, ServiceLocation, serviceLocationSchema } from "./structures.js";
-import { UninitializedClassError } from "./util.js";
+import { nameof, UninitializedClassError } from "./util.js";
 
 export class ConfigManager {
 	private static LOGGER?: Logger = undefined;
@@ -89,7 +89,7 @@ export class ConfigManager {
 	 * {@linkcode ConfigManager.init} and/or {@linkcode ConfigManager.setLogger}.
 	 */
 	public static loadGlobalConfig(globalConfigFilePath: string): GlobalConfigFile | Error {
-		if (!this.LOGGER) throw new UninitializedClassError(this.name, "LOGGER");
+		if (!this.LOGGER) throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
 
 		try {
 			this.LOGGER.log("Loading global config...");
@@ -115,7 +115,7 @@ export class ConfigManager {
 	 * {@linkcode ConfigManager.init} and/or {@linkcode ConfigManager.setLogger}.
 	 */
 	public static loadConfigs(configsDirPath: string): [ServiceLocation[], Error[]] | Error {
-		if (!this.LOGGER) throw new UninitializedClassError(this.name, "LOGGER");
+		if (!this.LOGGER) throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
 
 		const out: [ServiceLocation[], Error[]] = [[], []];
 
@@ -156,7 +156,7 @@ export class ConfigManager {
 	 * {@linkcode ConfigManager.setGlobalConfig}.
 	 */
 	public static getGlobalConfig(): Readonly<GlobalConfigFile> {
-		if (!this.GLOBAL_CONFIG) throw new UninitializedClassError(this.name, "GLOBAL_CONFIG");
+		if (!this.GLOBAL_CONFIG) throw new UninitializedClassError(this.name, nameof(() => this.GLOBAL_CONFIG));
 		return this.GLOBAL_CONFIG;
 	}
 
@@ -170,7 +170,7 @@ export class ConfigManager {
 	 * {@linkcode ConfigManager.setConfigs}.
 	 */
 	public static getServiceLocations(): readonly ServiceLocation[] {
-		if (!this.CONFIGS) throw new UninitializedClassError(this.name, "CONFIGS");
+		if (!this.CONFIGS) throw new UninitializedClassError(this.name, nameof(() => this.CONFIGS));
 		return this.CONFIGS.values().toArray();
 	}
 }
