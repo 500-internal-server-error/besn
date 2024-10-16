@@ -40,7 +40,7 @@ export class ConfigManager {
 
 		const globalConfigLoadResult = this.loadGlobalConfig(globalConfigFilePath);
 		if (globalConfigLoadResult instanceof Error) return globalConfigLoadResult;
-		this.setLogger(logger);
+		this.setGlobalConfig(globalConfigLoadResult);
 
 		const configsLoadResult = this.loadConfigs(configsDirPath);
 		if (configsLoadResult instanceof Error) return configsLoadResult;
