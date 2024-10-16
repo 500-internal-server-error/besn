@@ -4,7 +4,7 @@ import jsonfile from "jsonfile";
 
 import { Logger } from "./logger2.js";
 import { GlobalConfigFile, globalConfigFileSchema, ServiceLocation, serviceLocationSchema } from "./structures.js";
-import { nameof, UninitializedClassError } from "./util.js";
+import { nameof, MultipleClassInitializationsError, UninitializedClassError } from "./util.js";
 
 export class ConfigManager {
 	private static LOGGER?: Logger = undefined;
@@ -21,6 +21,9 @@ export class ConfigManager {
 	 * - {@linkcode ConfigManager.loadGlobalConfig} and {@linkcode ConfigManager.setGlobalConfig}
 	 * - {@linkcode ConfigManager.loadConfigs} and {@linkcode ConfigManager.setConfigs}
 	 *
+	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
+	 * bad architecture.
+	 *
 	 * @param logger The {@linkcode Logger} to use for future operations
 	 * @param globalConfigFilePath Path to the global config file
 	 * @param configsDirPath Path to the service location configs directory
@@ -28,6 +31,9 @@ export class ConfigManager {
 	 * @returns None if no errors occurred during initialization, an error if loading the global config file failed or
 	 * if reading the service location configs directory failed, or an array of errors if any failures occurred while
 	 * loading service location configs
+	 *
+	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
+	 * partially initialized, either by {@linkcode ConfigManager.init} or {@linkcode ConfigManager.setLogger}
 	 */
 	public static init(logger: Logger, globalConfigFilePath: string, configsDirPath: string): Error | Error[] | void {
 		this.setLogger(logger);
@@ -46,11 +52,18 @@ export class ConfigManager {
 	/**
 	 * Change the {@linkcode Logger} used for future operations
 	 *
+	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
+	 * bad architecture.
+	 *
 	 * @param logger The {@linkcode Logger} to use for future operations
 	 *
 	 * @returns None
+	 *
+	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
+	 * partially initialized, either by {@linkcode ConfigManager.init} or {@linkcode ConfigManager.setLogger}
 	 */
 	public static setLogger(logger: Logger) {
+		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
 		this.LOGGER = logger;
 	}
 
