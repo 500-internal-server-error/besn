@@ -186,4 +186,20 @@ export class ConfigManager {
 		if (!this.CONFIGS) throw new UninitializedClassError(this.name, nameof(() => this.CONFIGS));
 		return this.CONFIGS.values().toArray();
 	}
+
+	/**
+	 * Gets a readonly reference to a {@linkcode ServiceLocation}'s config
+	 *
+	 * @param guildId The requested service location config's guild ID
+	 *
+	 * @returns A readonly reference to the requested service 's config if it exists, none otherwise
+	 *
+	 * @throws Throws {@linkcode UninitializedClassError} if the {@linkcode ServiceLocation} configs have not been
+	 * loaded yet. See {@linkcode ConfigManager.init}, {@linkcode ConfigManager.loadConfigs}, and
+	 * {@linkcode ConfigManager.setConfigs}
+	 */
+	public static getConfig(guildId: Snowflake): Readonly<ServiceLocation> | undefined {
+		if (!this.CONFIGS) throw new UninitializedClassError(this.name, nameof(() => this.CONFIGS));
+		return this.CONFIGS.get(guildId);
+	}
 }
