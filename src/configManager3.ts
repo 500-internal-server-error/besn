@@ -147,11 +147,11 @@ export class ConfigManager {
 		for (const dirFile of dirFiles) {
 			try {
 				this.LOGGER.log(`Reading service location config ${dirFile.name}...`);
-				out[0].push(serviceLocationSchema.parse(jsonfile.readFileSync(dirFile.name)));
+				out[0].push(serviceLocationSchema.parse(jsonfile.readFileSync(`${configsDirPath}/${dirFile.name}`)));
 			} catch (e) {
 				if (!(e instanceof Error)) throw e;
 
-				this.LOGGER.error(`Failed to read config file ${dirFile.name}!`);
+				this.LOGGER.error(`Failed to read config file ${dirFile.name}! ${e.name}: ${e.message}`);
 				out[1].push(e);
 			}
 		}
