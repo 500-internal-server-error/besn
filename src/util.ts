@@ -102,6 +102,29 @@ export class UninitializedClassError extends Error {
 }
 
 /**
+ * Convenience class for use in runtime "asserts"
+ */
+export class MultipleClassInitializationsError extends Error {
+	public constructor(className: string, options?: ErrorOptions);
+	public constructor(className: string, propertyName?: string, options?: ErrorOptions);
+	public constructor(className: string, propertyNameOrOptions?: string | ErrorOptions, maybeOptions?: ErrorOptions) {
+		let message: string;
+		let options: ErrorOptions | undefined;
+
+		if (typeof propertyNameOrOptions === "string") {
+			const propertyName = propertyNameOrOptions;
+			message = `Multiple initializations of property ${propertyName} on class ${className}!`;
+			options = maybeOptions;
+		} else {
+			message = `Multiple initializations of class ${className}!`;
+			options = propertyNameOrOptions ?? maybeOptions;
+		}
+
+		super(message, options);
+	}
+}
+
+/**
  * Utility hack used to get a stringified variable name. Useful to avoid stale strings when renaming variables.
  *
  * @see https://stackoverflow.com/a/66935761
