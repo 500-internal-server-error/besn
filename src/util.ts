@@ -80,6 +80,15 @@ export function getStateHome() {
 /**
  * Convenience class for use in runtime "asserts"
  */
+export class UninitializedDependencyError extends Error {
+	public constructor(dependencyName: string, options?: ErrorOptions) {
+		super(`Use of uninitialized dependency ${dependencyName}!`, options);
+	}
+}
+
+/**
+ * Convenience class for use in runtime "asserts"
+ */
 export class UninitializedClassError extends Error {
 	public constructor(className: string, options?: ErrorOptions);
 	public constructor(className: string, propertyName?: string, options?: ErrorOptions);
