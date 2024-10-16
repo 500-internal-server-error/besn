@@ -93,8 +93,7 @@ export class UninitializedClassError extends Error {
 			options = maybeOptions;
 		} else {
 			message = `Use of uninitialized class ${className}!`;
-			if (propertyNameOrOptions) options = propertyNameOrOptions;
-			options = maybeOptions;
+			options = propertyNameOrOptions ?? maybeOptions;
 		}
 
 		super(message, options);
