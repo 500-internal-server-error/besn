@@ -162,9 +162,7 @@ export class LoggerFactory {
 	 * @returns None if initialization succeeded, i.e., initializing the {@linkcode FileBasedLogWriter} succeeded,
 	 * otherwise returns the error
 	 */
-	public static init(
-		logFilePath: string
-	): Error | void {
+	public static init(logFilePath: string): Error | void {
 		const consoleLogWriter = new ConsoleLogWriter();
 		let fileBasedLogWriter: FileBasedLogWriter;
 		try {
