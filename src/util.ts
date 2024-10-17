@@ -14,11 +14,6 @@ export function getRandomColor() {
 	return random(0, 2 ** 24 - 1);
 }
 
-export function openLogFileHandle(fileName: string): fs.WriteStream {
-	fs.mkdirSync(path.dirname(fileName), { recursive: true });
-	return fs.createWriteStream(fileName, { flags: "a+", mode: 0o644, flush: true });
-}
-
 export function openLogFileHandleV2(fileName: string): fs.WriteStream | Error {
 	fs.mkdirSync(path.dirname(fileName), { recursive: true });
 	const flags = "as";
@@ -43,38 +38,6 @@ export async function downloadFile(url: string, out: string) {
 			.fromWeb(response.body)
 			.pipe(fs.createWriteStream(out, { flags: "w", mode: 0o644, autoClose: true }))
 	);
-}
-
-export function clamp(min: number, value: number, max: number) {
-	if (value < min) return min;
-	if (value > max) return max;
-	return value;
-}
-
-export function getConfigHome() {
-	const xdgDir = process.env["XDG_CONFIG_HOME"];
-	if (xdgDir) return `${xdgDir}/besn`;
-
-	const home = process.env["HOME"];
-	if (home) return `${home}/.config/besn`;
-
-	const userprofile = process.env["USERPROFILE"];
-	if (userprofile) return `${userprofile}/.config/besn`;
-
-	throw new Error("Unable to determine config directory");
-}
-
-export function getStateHome() {
-	const xdgDir = process.env["XDG_STATE_HOME"];
-	if (xdgDir) return `${xdgDir}/besn`;
-
-	const home = process.env["HOME"];
-	if (home) return `${home}/.local/state/besn`;
-
-	const userprofile = process.env["USERPROFILE"];
-	if (userprofile) return `${userprofile}/.local/state/besn`;
-
-	throw new Error("Unable to determine log directory");
 }
 
 /**
