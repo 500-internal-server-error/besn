@@ -13,7 +13,15 @@ import { UpdateDbCommandHandler } from "./commands/updatedb.js";
 import { ConfigManager, ConfigManagerEvent } from "./configManager.js";
 import { EventReminder, EventReminderEvent } from "./eventReminder.js";
 import { LoggerFactory } from "./logger.js";
-import { ExitCode } from "./structures.js";
+
+export const enum ExitCode {
+	Ok,
+	Unknown,
+	BadOption,
+	BadGlobalConfig,
+	BadConfigsDir,
+	BadLogFile
+}
 
 async function main() {
 	const loggerFactoryError = LoggerFactory.init(`./run/logs/${DateTime.utc().toISO().replaceAll(":", ".")}.log`);

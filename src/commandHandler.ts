@@ -1,8 +1,13 @@
-import { ChatInputCommandInteraction, Client, GuildMember } from "discord.js";
+import { ChatInputApplicationCommandData, ChatInputCommandInteraction, Client, GuildMember } from "discord.js";
 
+import { ServiceLocation } from "./configManager.js";
 import { Logger } from "./logger.js";
-import { ICommandHandler, ServiceLocation } from "./structures.js";
 import { MultipleClassInitializationsError, nameof, UninitializedClassError, UninitializedDependencyError } from "./util.js";
+
+export interface ICommandHandler {
+	getSignature(): ChatInputApplicationCommandData;
+	handle(interaction: ChatInputCommandInteraction): Promise<void> | void;
+}
 
 export class MasterCommandHandler {
 	private static LOGGER?: Logger = undefined;

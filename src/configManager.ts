@@ -2,10 +2,53 @@ import { Snowflake } from "discord.js";
 import EventEmitter from "events";
 import * as fs from "fs";
 import jsonfile from "jsonfile";
+import { z } from "zod";
 
 import { Logger } from "./logger.js";
-import { GlobalConfigFile, globalConfigFileSchema, ServiceLocation, serviceLocationSchema } from "./structures.js";
 import { nameof, MultipleClassInitializationsError, UninitializedClassError } from "./util.js";
+
+export const serviceLocationSchema = z.object({
+	guildId: z.string(),
+	ioChannelId: z.string(),
+	commandAccessRoleIds: z.array(z.string()),
+	modules: z.object({
+		eventReminder: z.object({
+			storyPingRoleId: z.string(),
+			showPingRoleId: z.union([
+				z.string(),
+				z.object({
+					UTC06: z.string(),
+					UTC07: z.string(),
+					UTC08: z.string(),
+					UTC09: z.string(),
+					UTC11: z.string(),
+					UTC15: z.string(),
+					UTC19: z.string(),
+					UTC21: z.string(),
+					UTC01: z.string(),
+					UTC02: z.string(),
+					UTC04: z.string()
+				})
+			])
+		}),
+		boostNotifier: z.object({
+			boostRole: z.string(),
+			ioChannelId: z.string()
+		})
+	})
+});
+
+export type ServiceLocation = z.infer<typeof serviceLocationSchema>;
+
+export const globalConfigFileSchema = z.object({
+	ownerId: z.string(),
+	ownerGuildId: z.string(),
+	ownerIoChannelId: z.string(),
+
+	token: z.string()
+});
+
+export type GlobalConfigFile = z.infer<typeof globalConfigFileSchema>;
 
 export const enum ConfigManagerEvent {
 	ConfigsReloaded = "configsReloaded"

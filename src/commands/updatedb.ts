@@ -1,8 +1,8 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 
+import { ICommandHandler } from "../commandHandler.js";
 import { EventReminder } from "../eventReminder.js";
 import { Logger } from "../logger.js";
-import { ICommandHandler } from "../structures.js";
 import { MultipleClassInitializationsError, nameof, UninitializedClassError } from "../util.js";
 
 export class UpdateDbCommandHandler implements ICommandHandler {

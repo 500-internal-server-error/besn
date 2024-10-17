@@ -1,7 +1,7 @@
 import { GuildMember, TextChannel } from "discord.js";
 
+import { ServiceLocation } from "./configManager.js";
 import { Logger } from "./logger.js";
-import { ServiceLocation } from "./structures.js";
 import { MultipleClassInitializationsError, nameof, UninitializedClassError } from "./util.js";
 
 export class BoostNotifier {

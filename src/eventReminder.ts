@@ -6,8 +6,36 @@ import * as ns from "node-schedule";
 import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 
 import { Logger } from "./logger.js";
-import { Story, VirtualLive } from "./structures.js";
 import { downloadFile, MultipleClassInitializationsError, nameof, UninitializedClassError } from "./util.js";
+
+// Not comprehensive, only includes details we are interested in
+
+export const enum StoryType {
+	Marathon = "marathon",
+	CheerfulCarnival = "cheerful_carnival"
+}
+
+export type Story = {
+	id: number;
+	name: string;
+	eventType: StoryType;
+	startAt: number;
+};
+
+export type VirtualLiveSchedule = {
+	virtualLiveId: number;
+	seq: number;
+	startAt: number;
+	endAt: number;
+};
+
+export type VirtualLive = {
+	id: number;
+	name: string;
+	startAt: number;
+	endAt: number;
+	virtualLiveSchedules: VirtualLiveSchedule[];
+};
 
 export const enum EventReminderEvent {
 	StoryStart = "storyStart",
