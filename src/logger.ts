@@ -176,6 +176,7 @@ export class LoggerFactory {
 		const compositeLogWriter = new CompositeLogWriter([consoleLogWriter, fileBasedLogWriter]);
 
 		this.DEFAULT_LOG_WRITER = compositeLogWriter;
+		this.DEFAULT_LOGGER.setLogWriter(this.DEFAULT_LOG_WRITER);
 	}
 
 	/**
