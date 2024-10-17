@@ -1,6 +1,6 @@
 import { GuildMember, TextChannel } from "discord.js";
 
-import { Logger } from "./logger2.js";
+import { Logger } from "./logger.js";
 import { ServiceLocation } from "./structures.js";
 import { MultipleClassInitializationsError, nameof, UninitializedClassError } from "./util.js";
 

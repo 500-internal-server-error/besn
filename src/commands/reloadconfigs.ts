@@ -1,7 +1,7 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 
-import { ConfigManager } from "../configManager3.js";
-import { Logger } from "../logger2.js";
+import { ConfigManager } from "../configManager.js";
+import { Logger } from "../logger.js";
 import { ICommandHandler } from "../structures.js";
 import { MultipleClassInitializationsError, nameof, UninitializedClassError } from "../util.js";
 

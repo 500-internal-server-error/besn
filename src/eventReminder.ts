@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import * as ns from "node-schedule";
 import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 
-import { Logger } from "./logger2.js";
+import { Logger } from "./logger.js";
 import { Story, VirtualLive } from "./structures.js";
 import { downloadFile, MultipleClassInitializationsError, nameof, UninitializedClassError } from "./util.js";
 

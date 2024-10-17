@@ -1,12 +1,12 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 
-import { ConfigManager } from "../configManager3.js";
-import { Logger } from "../logger2.js";
+import { Logger } from "../logger.js";
 import { ICommandHandler } from "../structures.js";
+import { ConfigManager } from "../configManager.js";
 import { MultipleClassInitializationsError, nameof, UninitializedClassError } from "../util.js";
 
-export class CrashCommandHandler implements ICommandHandler {
-	private static INSTANCE = new CrashCommandHandler();
+export class DumpConfigCommandHandler implements ICommandHandler {
+	private static INSTANCE = new DumpConfigCommandHandler();
 
 	private static LOGGER?: Logger = undefined;
 
@@ -27,8 +27,8 @@ export class CrashCommandHandler implements ICommandHandler {
 	 * @returns None
 	 *
 	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
-	 * partially initialized, either by {@linkcode CrashCommandHandler.init} or
-	 * {@linkcode CrashCommandHandler.setLogger}
+	 * partially initialized, either by {@linkcode DumpConfigCommandHandler.init} or
+	 * {@linkcode DumpConfigCommandHandler.setLogger}
 	 */
 	public static setLogger(logger: Logger) {
 		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
@@ -41,37 +41,25 @@ export class CrashCommandHandler implements ICommandHandler {
 
 	public getSignature(): ChatInputApplicationCommandData {
 		return {
-			name: "crash",
-			description: "Can they not shut down the bot more gently??? 😭"
+			name: "dumpconfig",
+			description: "Dumps the current config"
 		};
 	}
 
 	public handle(interaction: ChatInputCommandInteraction) {
-		if (!CrashCommandHandler.LOGGER) {
-			throw new UninitializedClassError(CrashCommandHandler.name, nameof(() => CrashCommandHandler.LOGGER));
+		if (!DumpConfigCommandHandler.LOGGER) {
+			throw new UninitializedClassError(DumpConfigCommandHandler.name, nameof(() => DumpConfigCommandHandler.LOGGER));
 		}
 
 		const executor = interaction.member as GuildMember;
-		CrashCommandHandler.LOGGER.log(`${executor.id} requested a shutdown!`);
+		const executorGuild = executor.guild;
+		DumpConfigCommandHandler.LOGGER.log(
+			`${executor.id} requested a dump of server ${executorGuild.id}'s current config!`
+		);
 
-		// TODO: Get the ConfigManager implemented properly
-		if (executor.id !== ConfigManager.getGlobalConfig().ownerId) {
-			CrashCommandHandler.LOGGER.log(
-				`${executor.id} tried to issue commands without having the appropriate permission!`
-			);
+		const configString = JSON.stringify(ConfigManager.getConfig(executorGuild.id), null, 4);
 
-			void interaction.reply(
-				{
-					content: ":sparkles:     :innocent: :thumbsdown:     :sparkles:",
-					ephemeral: true
-				}
-			);
-
-			return;
-		}
-
-		// Should probably find a better way to shutdown
-		// eslint-disable-next-line @typescript-eslint/only-throw-error
-		throw "Shutdown Request";
+		DumpConfigCommandHandler.LOGGER.debug(configString);
+		void interaction.reply({ content: `\`\`\`json\n${configString}\n\`\`\``, ephemeral: true });
 	}
 }

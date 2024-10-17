@@ -2,17 +2,17 @@ import { Client, Collection, Events, GuildMember, IntentsBitField, Snowflake } f
 import { DateTime } from "luxon";
 import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 
-import { BoostNotifier } from "./boostNotifier2.js";
-import { MasterCommandHandler } from "./commandHandler3.js";
-import { CrashCommandHandler } from "./commands/crash2.js";
-import { DumpConfigCommandHandler } from "./commands/dumpconfig2.js";
-import { ListEventsCommandHandler } from "./commands/listevents2.js";
-import { StatusCommandHandler } from "./commands/status3.js";
-import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs2.js";
-import { UpdateDbCommandHandler } from "./commands/updatedb2.js";
-import { ConfigManager } from "./configManager3.js";
-import { EventReminder, EventReminderEvent } from "./eventReminder2.js";
-import { LoggerFactory } from "./logger2.js";
+import { BoostNotifier } from "./boostNotifier.js";
+import { MasterCommandHandler } from "./commandHandler.js";
+import { CrashCommandHandler } from "./commands/crash.js";
+import { DumpConfigCommandHandler } from "./commands/dumpconfig.js";
+import { ListEventsCommandHandler } from "./commands/listevents.js";
+import { StatusCommandHandler } from "./commands/status.js";
+import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs.js";
+import { UpdateDbCommandHandler } from "./commands/updatedb.js";
+import { ConfigManager } from "./configManager.js";
+import { EventReminder, EventReminderEvent } from "./eventReminder.js";
+import { LoggerFactory } from "./logger.js";
 import { ExitCode } from "./structures.js";
 
 async function main() {

@@ -2,7 +2,7 @@ import { Snowflake } from "discord.js";
 import * as fs from "fs";
 import jsonfile from "jsonfile";
 
-import { Logger } from "./logger2.js";
+import { Logger } from "./logger.js";
 import { GlobalConfigFile, globalConfigFileSchema, ServiceLocation, serviceLocationSchema } from "./structures.js";
 import { nameof, MultipleClassInitializationsError, UninitializedClassError } from "./util.js";
 

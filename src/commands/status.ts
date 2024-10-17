@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import { DateTime } from "luxon";
 
-import { Logger } from "../logger2.js";
+import { Logger } from "../logger.js";
 import { ICommandHandler } from "../structures.js";
 import { getRandomColor, MultipleClassInitializationsError, nameof, UninitializedClassError } from "../util.js";
 
