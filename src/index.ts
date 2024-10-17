@@ -10,7 +10,7 @@ import { ListEventsCommandHandler } from "./commands/listevents.js";
 import { StatusCommandHandler } from "./commands/status.js";
 import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs.js";
 import { UpdateDbCommandHandler } from "./commands/updatedb.js";
-import { ConfigManager } from "./configManager.js";
+import { ConfigManager, ConfigManagerEvent } from "./configManager.js";
 import { EventReminder, EventReminderEvent } from "./eventReminder.js";
 import { LoggerFactory } from "./logger.js";
 import { ExitCode } from "./structures.js";
@@ -184,6 +184,11 @@ async function main() {
 				);
 			}
 		}
+	});
+
+	ConfigManager.on(ConfigManagerEvent.ConfigsReloaded, (serviceLocations) => {
+		MasterCommandHandler.setServiceLocations(serviceLocations);
+		BoostNotifier.setServiceLocations(serviceLocations);
 	});
 
 	// 8. Login

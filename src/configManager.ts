@@ -1,4 +1,5 @@
 import { Snowflake } from "discord.js";
+import EventEmitter from "events";
 import * as fs from "fs";
 import jsonfile from "jsonfile";
 
@@ -6,8 +7,14 @@ import { Logger } from "./logger.js";
 import { GlobalConfigFile, globalConfigFileSchema, ServiceLocation, serviceLocationSchema } from "./structures.js";
 import { nameof, MultipleClassInitializationsError, UninitializedClassError } from "./util.js";
 
+export const enum ConfigManagerEvent {
+	ConfigsReloaded = "configsReloaded"
+}
+
 export class ConfigManager {
 	private static LOGGER?: Logger = undefined;
+
+	private static EVENT_EMITTER?: EventEmitter;
 
 	private static GLOBAL_CONFIG?: Readonly<GlobalConfigFile> = undefined;
 	private static CONFIGS?: Map<Snowflake, Readonly<ServiceLocation>> = undefined;
@@ -37,6 +44,11 @@ export class ConfigManager {
 	 */
 	public static init(logger: Logger, globalConfigFilePath: string, configsDirPath: string): Error | Error[] | void {
 		this.setLogger(logger);
+
+		if (this.EVENT_EMITTER) {
+			throw new MultipleClassInitializationsError(this.name, nameof(() => this.EVENT_EMITTER));
+		}
+		this.EVENT_EMITTER = new EventEmitter();
 
 		const globalConfigLoadResult = this.loadGlobalConfig(globalConfigFilePath);
 		if (globalConfigLoadResult instanceof Error) return globalConfigLoadResult;
@@ -86,9 +98,12 @@ export class ConfigManager {
 	 * @returns None
 	 */
 	public static setConfigs(serviceLocations: readonly ServiceLocation[]) {
+		if (!this.EVENT_EMITTER) throw new UninitializedClassError(this.name, nameof(() => this.EVENT_EMITTER));
+
 		if (!this.CONFIGS) this.CONFIGS = new Map<Snowflake, ServiceLocation>();
 		this.CONFIGS.clear();
 		for (const serviceLocation of serviceLocations) this.CONFIGS.set(serviceLocation.guildId, serviceLocation);
+		this.EVENT_EMITTER.emit(ConfigManagerEvent.ConfigsReloaded, serviceLocations);
 	}
 
 	/**
@@ -157,6 +172,16 @@ export class ConfigManager {
 		}
 
 		return out;
+	}
+
+	public static on(
+		eventName: ConfigManagerEvent.ConfigsReloaded,
+		listener: (serviceLocations: readonly ServiceLocation[]) => void
+	): void;
+
+	public static on(eventName: ConfigManagerEvent, listener: (...args: any[]) => any): void {
+		if (!this.EVENT_EMITTER) throw new UninitializedClassError(this.name, nameof(() => this.EVENT_EMITTER));
+		this.EVENT_EMITTER.on(eventName, listener);
 	}
 
 	/**

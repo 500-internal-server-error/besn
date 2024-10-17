@@ -61,7 +61,8 @@ export class ReloadConfigsCommandHandler implements ICommandHandler {
 		const configString = JSON.stringify(ConfigManager.getConfig(executorGuild.id), null, 4);
 
 		ReloadConfigsCommandHandler.LOGGER.debug(configString);
-		ConfigManager.loadConfigs("./run/configs"); // TODO: do not hardcode paths
+		const configsLoadResult = ConfigManager.loadConfigs("./run/configs"); // TODO: do not hardcode paths
+		if (!(configsLoadResult instanceof Error)) ConfigManager.setConfigs(configsLoadResult[0]);
 		void interaction.reply({ content: "Configs reloaded!", ephemeral: true });
 	}
 }
