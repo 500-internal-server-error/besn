@@ -62,7 +62,7 @@ export class FileBasedLogWriter implements ILogWriter {
 	}
 
 	public static openFile(file: string) {
-		const result = util.openLogFileHandleV2(file);
+		const result = util.openLogFileHandle(file);
 		if (result instanceof Error) {
 			throw new Error(`Attempted to write to bad file handle! Error: ${result.message}`);
 		} else {

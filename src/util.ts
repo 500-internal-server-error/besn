@@ -14,7 +14,7 @@ export function getRandomColor() {
 	return random(0, 2 ** 24 - 1);
 }
 
-export function openLogFileHandleV2(fileName: string): fs.WriteStream | Error {
+export function openLogFileHandle(fileName: string): fs.WriteStream | Error {
 	fs.mkdirSync(path.dirname(fileName), { recursive: true });
 	const flags = "as";
 	const mode = 0o644;
