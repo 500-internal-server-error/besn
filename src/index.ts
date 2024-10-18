@@ -128,7 +128,7 @@ async function main() {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
 
-				const ioChannel = await guild.channels.fetch(serviceLocation.ioChannelId);
+				const ioChannel = await guild.channels.fetch(serviceLocation.primaryIoChannelId);
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
@@ -143,7 +143,9 @@ async function main() {
 
 				logger.error(`${e.name}: ${e.message}`);
 				logger.error(
-					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+					`Was processing:\n`
+					+ `  - guildId: ${serviceLocation.guildId}\n`
+					+ `  - ioChannelId: ${serviceLocation.modules.eventReminder.ioChannelId}`
 				);
 			}
 		}
@@ -154,7 +156,7 @@ async function main() {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
 
-				const ioChannel = await guild.channels.fetch(serviceLocation.ioChannelId);
+				const ioChannel = await guild.channels.fetch(serviceLocation.primaryIoChannelId);
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
@@ -188,7 +190,9 @@ async function main() {
 
 				logger.error(`${e.name}: ${e.message}`);
 				logger.error(
-					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+					`Was processing:\n`
+					+ `  - guildId: ${serviceLocation.guildId}\n`
+					+ `  - ioChannelId: ${serviceLocation.modules.eventReminder.ioChannelId}`
 				);
 			}
 		}

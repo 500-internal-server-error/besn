@@ -9,7 +9,7 @@ import { nameof, MultipleClassInitializationsError, UninitializedClassError } fr
 
 export const serviceLocationSchema = z.object({
 	guildId: z.string(),
-	ioChannelId: z.string(),
+	primaryIoChannelId: z.string(),
 	commandAccessRoleIds: z.array(z.string()),
 	modules: z.object({
 		eventReminder: z.object({
@@ -29,7 +29,8 @@ export const serviceLocationSchema = z.object({
 					UTC02: z.string(),
 					UTC04: z.string()
 				})
-			])
+			]),
+			ioChannelId: z.string()
 		}),
 		boostNotifier: z.object({
 			boostRole: z.string(),

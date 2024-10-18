@@ -177,7 +177,9 @@ export class MasterCommandHandler {
 
 				this.LOGGER.error(`${e.name}: ${e.message}`);
 				this.LOGGER.error(
-					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+					`Was processing:\n`
+					+ `  - guildId: ${serviceLocation.guildId}\n`
+					+ `  - ioChannelId: ${serviceLocation.primaryIoChannelId}`
 				);
 			}
 		}
@@ -218,7 +220,9 @@ export class MasterCommandHandler {
 
 				this.LOGGER.error(`${e.name}: ${e.message}`);
 				this.LOGGER.error(
-					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+					`Was processing:\n`
+					+ `  - guildId: ${serviceLocation.guildId}\n`
+					+ `  - ioChannelId: ${serviceLocation.primaryIoChannelId}`
 				);
 			}
 		}
