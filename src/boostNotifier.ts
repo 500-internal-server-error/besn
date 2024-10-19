@@ -59,8 +59,8 @@ export class BoostNotifier {
 			const newMemberRoles = newMember.roles.cache;
 			const boostRoleId = serviceLocation.modules.boostNotifier.boostRole;
 
-			let message = "";
-			let ioChannelId = "";
+			let message: string | undefined;
+			let ioChannelId: string | undefined;
 			if (!oldMemberRoles.has(boostRoleId) && newMemberRoles.has(boostRoleId)) {
 				const { userKey, formatMessage } = serviceLocation.modules.boostNotifier.boostMessage;
 				message = formatMessage.replaceAll(userKey, oldMember.id);
@@ -75,18 +75,21 @@ export class BoostNotifier {
 				ioChannelId = typeof configIoChannelId === "string" ? configIoChannelId : configIoChannelId.deboost;
 			}
 
+			// If message and/or ioChannelId is still empty it means something changed, but is uninteresting to us
+			if (!message || !ioChannelId) return;
+
 			const guild = oldMember.guild;
 			const ioChannel = await guild.channels.fetch(ioChannelId);
 
-			if (ioChannel && !ioChannel.isTextBased()) {
+			if (!ioChannel?.isTextBased()) {
 				this.LOGGER.warn(
 					`Caught nitro (de)boosting action in guild ${guild.id} caused by user ${oldMember.id}`
 					+ ` but its configured IO channel ${ioChannel?.id} is not a text channel!`
 				);
-			} else if (message.length > 0) {
-				this.LOGGER.log(message);
-				void (ioChannel as TextChannel).send(message);
 			}
+
+			this.LOGGER.log(message);
+			void (ioChannel as TextChannel).send(message);
 
 			// Stop looking if we did stuff
 			return;
