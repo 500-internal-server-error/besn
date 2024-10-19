@@ -51,8 +51,6 @@ export class BoostNotifier {
 			// Check if the member update was from a location we service, otherwise keep looking
 			if (oldMember.guild.id !== serviceLocation.guildId) continue;
 
-			this.LOGGER.debug(`User ${oldMember.id} from guild ${oldMember.guild.id} changed somehow`);
-
 			// The member is in a location we service
 			// Check if they gained or lost the role we care about
 			// If so, write the appropriate message
@@ -60,9 +58,6 @@ export class BoostNotifier {
 			const oldMemberRoles = oldMember.roles.cache;
 			const newMemberRoles = newMember.roles.cache;
 			const boostRoleId = serviceLocation.modules.boostNotifier.boostRole;
-
-			this.LOGGER.debug(`Previously was:\n${JSON.stringify(oldMember, null, 4)}`);
-			this.LOGGER.debug(`Now is:\n${JSON.stringify(newMember, null, 4)}`);
 
 			let message = "";
 			let ioChannelId = "";
