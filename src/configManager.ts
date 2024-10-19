@@ -116,8 +116,8 @@ export class ConfigManager {
 		const configsLoadResult = this.loadConfigs(configsDirPath);
 		if (configsLoadResult instanceof Error) return new ConfigDirLoadError(configsLoadResult);
 		const [configs, configLoadErrors] = configsLoadResult;
-		if (configLoadErrors.length > 0) return configLoadErrors;
 		this.setConfigs(configs);
+		if (configLoadErrors.length > 0) return configLoadErrors;
 	}
 
 	/**
