@@ -78,7 +78,7 @@ export class BoostNotifier {
 			const guild = oldMember.guild;
 			const ioChannel = await guild.channels.fetch(ioChannelId);
 
-			if (!ioChannel?.isTextBased()) {
+			if (ioChannel && !ioChannel.isTextBased()) {
 				this.LOGGER.warn(
 					`Caught nitro (de)boosting action in guild ${guild.id} caused by user ${oldMember.id}`
 					+ ` but its configured IO channel ${ioChannel?.id} is not a text channel!`
