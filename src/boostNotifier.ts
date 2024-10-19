@@ -67,12 +67,14 @@ export class BoostNotifier {
 			let message = "";
 			let ioChannelId = "";
 			if (!oldMemberRoles.has(boostRoleId) && newMemberRoles.has(boostRoleId)) {
-				message = `<@${oldMember.id}> started boosting the server! :tada:`;
+				const { userKey, formatMessage } = serviceLocation.modules.boostNotifier.boostMessage;
+				message = formatMessage.replaceAll(userKey, oldMember.id);
 
 				const configIoChannelId = serviceLocation.modules.boostNotifier.ioChannelId;
 				ioChannelId = typeof configIoChannelId === "string" ? configIoChannelId : configIoChannelId.boost;
 			} else if (oldMemberRoles.has(boostRoleId) && !newMemberRoles.has(boostRoleId)) {
-				message = `<@${oldMember.id}> is no longer boosting the server :broken_heart:`;
+				const { userKey, formatMessage } = serviceLocation.modules.boostNotifier.deboostMessage;
+				message = formatMessage.replaceAll(userKey, oldMember.id);
 
 				const configIoChannelId = serviceLocation.modules.boostNotifier.ioChannelId;
 				ioChannelId = typeof configIoChannelId === "string" ? configIoChannelId : configIoChannelId.deboost;

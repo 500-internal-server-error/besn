@@ -40,7 +40,15 @@ export const serviceLocationSchema = z.object({
 					boost: z.string(),
 					deboost: z.string()
 				})
-			])
+			]),
+			boostMessage: z.object({
+				userKey: z.string(),
+				formatMessage: z.string()
+			}),
+			deboostMessage: z.object({
+				userKey: z.string(),
+				formatMessage: z.string()
+			})
 		})
 	})
 });
