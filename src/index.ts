@@ -10,7 +10,7 @@ import { ListEventsCommandHandler } from "./commands/listevents.js";
 import { StatusCommandHandler } from "./commands/status.js";
 import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs.js";
 import { UpdateDbCommandHandler } from "./commands/updatedb.js";
-import { ConfigManager, ConfigManagerEvent } from "./configManager.js";
+import { ConfigDirLoadError, ConfigManager, ConfigManagerEvent, GlobalConfigLoadError } from "./configManager.js";
 import { EventReminder, EventReminderEvent } from "./eventReminder.js";
 import { LoggerFactory } from "./logger.js";
 
@@ -31,8 +31,8 @@ async function main() {
 	}
 
 	const configManagerInitResult = ConfigManager.init(LoggerFactory.get("ConfigManager"), "./config.json", "./run/configs");
-	if (configManagerInitResult instanceof Error) return ExitCode.BadGlobalConfig;
-	if (Array.isArray(configManagerInitResult)) return ExitCode.BadConfigsDir;
+	if (configManagerInitResult instanceof GlobalConfigLoadError) return ExitCode.BadGlobalConfig;
+	if (configManagerInitResult instanceof ConfigDirLoadError) return ExitCode.BadConfigsDir;
 
 	const logger = LoggerFactory.get("main");
 

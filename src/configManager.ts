@@ -55,6 +55,11 @@ export const enum ConfigManagerEvent {
 	ConfigsReloaded = "configsReloaded"
 }
 
+/* eslint-disable @stylistic/max-statements-per-line */
+export class GlobalConfigLoadError extends Error { public constructor(e: Error) { super(e.message); } }
+export class ConfigDirLoadError extends Error { public constructor(e: Error) { super(e.message); } }
+/* eslint-enable @stylistic/max-statements-per-line */
+
 export class ConfigManager {
 	private static LOGGER?: Logger = undefined;
 
@@ -86,7 +91,11 @@ export class ConfigManager {
 	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
 	 * partially initialized, either by {@linkcode ConfigManager.init} or {@linkcode ConfigManager.setLogger}
 	 */
-	public static init(logger: Logger, globalConfigFilePath: string, configsDirPath: string): Error | Error[] | void {
+	public static init(
+		logger: Logger,
+		globalConfigFilePath: string,
+		configsDirPath: string
+	): GlobalConfigLoadError | ConfigDirLoadError | Error[] | void {
 		this.setLogger(logger);
 
 		if (this.EVENT_EMITTER) {
@@ -95,11 +104,11 @@ export class ConfigManager {
 		this.EVENT_EMITTER = new EventEmitter();
 
 		const globalConfigLoadResult = this.loadGlobalConfig(globalConfigFilePath);
-		if (globalConfigLoadResult instanceof Error) return globalConfigLoadResult;
+		if (globalConfigLoadResult instanceof Error) return new GlobalConfigLoadError(globalConfigLoadResult);
 		this.setGlobalConfig(globalConfigLoadResult);
 
 		const configsLoadResult = this.loadConfigs(configsDirPath);
-		if (configsLoadResult instanceof Error) return configsLoadResult;
+		if (configsLoadResult instanceof Error) return new ConfigDirLoadError(configsLoadResult);
 		const [configs, configLoadErrors] = configsLoadResult;
 		if (configLoadErrors.length > 0) return configLoadErrors;
 		this.setConfigs(configs);
