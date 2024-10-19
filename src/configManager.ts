@@ -34,7 +34,13 @@ export const serviceLocationSchema = z.object({
 		}),
 		boostNotifier: z.object({
 			boostRole: z.string(),
-			ioChannelId: z.string()
+			ioChannelId: z.union([
+				z.string(),
+				z.object({
+					boost: z.string(),
+					deboost: z.string()
+				})
+			])
 		})
 	})
 });

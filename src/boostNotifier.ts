@@ -65,14 +65,21 @@ export class BoostNotifier {
 			this.LOGGER.debug(`Now is:\n${JSON.stringify(newMember, null, 4)}`);
 
 			let message = "";
+			let ioChannelId = "";
 			if (!oldMemberRoles.has(boostRoleId) && newMemberRoles.has(boostRoleId)) {
 				message = `<@${oldMember.id}> started boosting the server! :tada:`;
+
+				const configIoChannelId = serviceLocation.modules.boostNotifier.ioChannelId;
+				ioChannelId = typeof configIoChannelId === "string" ? configIoChannelId : configIoChannelId.boost;
 			} else if (oldMemberRoles.has(boostRoleId) && !newMemberRoles.has(boostRoleId)) {
 				message = `<@${oldMember.id}> is no longer boosting the server :broken_heart:`;
+
+				const configIoChannelId = serviceLocation.modules.boostNotifier.ioChannelId;
+				ioChannelId = typeof configIoChannelId === "string" ? configIoChannelId : configIoChannelId.deboost;
 			}
 
 			const guild = oldMember.guild;
-			const ioChannel = await guild.channels.fetch(serviceLocation.modules.boostNotifier.ioChannelId);
+			const ioChannel = await guild.channels.fetch(ioChannelId);
 
 			if (!ioChannel?.isTextBased()) {
 				this.LOGGER.warn(
