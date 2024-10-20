@@ -6,8 +6,36 @@ import * as ns from "node-schedule";
 import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 
 import { Logger } from "./logger.js";
-import { Story, VirtualLive } from "./structures.js";
-import * as util from "./util.js";
+import { downloadFile, MultipleClassInitializationsError, nameof, UninitializedClassError } from "./util.js";
+
+// Not comprehensive, only includes details we are interested in
+
+export const enum StoryType {
+	Marathon = "marathon",
+	CheerfulCarnival = "cheerful_carnival"
+}
+
+export type Story = {
+	id: number;
+	name: string;
+	eventType: StoryType;
+	startAt: number;
+};
+
+export type VirtualLiveSchedule = {
+	virtualLiveId: number;
+	seq: number;
+	startAt: number;
+	endAt: number;
+};
+
+export type VirtualLive = {
+	id: number;
+	name: string;
+	startAt: number;
+	endAt: number;
+	virtualLiveSchedules: VirtualLiveSchedule[];
+};
 
 export const enum EventReminderEvent {
 	StoryStart = "storyStart",
@@ -15,23 +43,33 @@ export const enum EventReminderEvent {
 }
 
 export class EventReminder {
-	private static readonly LOGGER = Logger.get("EventReminder");
-	private static readonly EVENT_EMITTER = new EventEmitter();
-	private static readonly SCHEDULER = new ToadScheduler();
+	private static LOGGER?: Logger = undefined;
 
-	private static readonly SCHEDULED_EVENTS: ns.Job[] = [];
+	private static EVENT_EMITTER?: EventEmitter = undefined;
+	private static SCHEDULER?: ToadScheduler = undefined;
+
+	private static SCHEDULED_EVENTS?: ns.Job[] = undefined;
 
 	private constructor() {}
 
-	public static async init() {
-		await this.refreshResources();
+	public static async init(logger: Logger) {
+		this.setLogger(logger);
 
+		if (this.EVENT_EMITTER) {
+			throw new MultipleClassInitializationsError(this.name, nameof(() => this.EVENT_EMITTER));
+		}
+		this.EVENT_EMITTER = new EventEmitter();
+
+		if (this.SCHEDULER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.SCHEDULER));
+		this.SCHEDULER = new ToadScheduler();
 		this.SCHEDULER.addSimpleIntervalJob(
 			new SimpleIntervalJob(
 				{ hours: 1 },
 				new AsyncTask(
 					"EventReminder: ResourceRefreshJob",
 					async () => {
+						if (!this.LOGGER) throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
+
 						this.LOGGER.log("Refreshing resources...");
 						await this.refreshResources();
 						this.LOGGER.log("Finished refreshing resources");
@@ -39,6 +77,31 @@ export class EventReminder {
 				)
 			)
 		);
+
+		if (this.SCHEDULED_EVENTS) {
+			throw new MultipleClassInitializationsError(this.name, nameof(() => this.SCHEDULED_EVENTS));
+		}
+		this.SCHEDULED_EVENTS = [];
+
+		await this.refreshResources();
+	}
+
+	/**
+	 * Change the {@linkcode Logger} used for future operations
+	 *
+	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
+	 * bad architecture.
+	 *
+	 * @param logger The {@linkcode Logger} to use for future operations
+	 *
+	 * @returns None
+	 *
+	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
+	 * partially initialized, either by {@linkcode EventReminder.init} or {@linkcode EventReminder.setLogger}
+	 */
+	public static setLogger(logger: Logger) {
+		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
+		this.LOGGER = logger;
 	}
 
 	public static on(
@@ -52,10 +115,14 @@ export class EventReminder {
 	): void;
 
 	public static on(eventName: EventReminderEvent, listener: (...args: any[]) => any): void {
+		if (!this.EVENT_EMITTER) throw new UninitializedClassError(this.name, nameof(() => this.EVENT_EMITTER));
 		this.EVENT_EMITTER.on(eventName, listener);
 	}
 
 	public static async refreshResources() {
+		if (!this.SCHEDULED_EVENTS) throw new UninitializedClassError(this.name, nameof(() => this.SCHEDULED_EVENTS));
+		if (!this.LOGGER) throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
+
 		// Prepare folder to store them in
 		// Wait until we are done (sync), before downloading, otherwise they have nowhere to go
 
@@ -75,11 +142,11 @@ export class EventReminder {
 
 		this.LOGGER.log("Downloading resources files...");
 		await Promise.allSettled([
-			util.downloadFile(
+			downloadFile(
 				"https://sekai-world.github.io/sekai-master-db-en-diff/events.json",
 				"./run/resources/stories.json"
 			),
-			util.downloadFile(
+			downloadFile(
 				"https://sekai-world.github.io/sekai-master-db-en-diff/virtualLives.json",
 				"./run/resources/shows.json"
 			)
@@ -89,8 +156,8 @@ export class EventReminder {
 
 		this.LOGGER.log("Reading resource files...");
 
-		const stories = jsonfile.readFileSync("./run/resources/stories.json", { "throws": false }) as Story[] | null ?? [];
-		const shows = jsonfile.readFileSync("./run/resources/shows.json", { "throws": false }) as VirtualLive[] | null ?? [];
+		const stories = jsonfile.readFileSync("./run/resources/stories.json", { throws: false }) as Story[] | null ?? [];
+		const shows = jsonfile.readFileSync("./run/resources/shows.json", { throws: false }) as VirtualLive[] | null ?? [];
 
 		// We can cancel everything so we start clean
 
@@ -152,6 +219,14 @@ export class EventReminder {
 			this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
 			const job = ns.scheduleJob(`EventReminder: ${name}`, actualRemindAtDate.toJSDate(), () => {
+				if (!this.EVENT_EMITTER) {
+					throw new UninitializedClassError(this.name, nameof(() => this.EVENT_EMITTER));
+				}
+
+				if (!this.LOGGER) {
+					throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
+				}
+
 				this.EVENT_EMITTER.emit(EventReminderEvent.StoryStart, name, startAtDate);
 				this.LOGGER.log(`Event fired: Story "${name}" released`);
 				ns.cancelJob(job);
@@ -210,6 +285,14 @@ export class EventReminder {
 				this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
 				const job = ns.scheduleJob(`EventReminder: ${name} #${i + 1}`, actualRemindAtDate.toJSDate(), () => {
+					if (!this.EVENT_EMITTER) {
+						throw new UninitializedClassError(this.name, nameof(() => this.EVENT_EMITTER));
+					}
+
+					if (!this.LOGGER) {
+						throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
+					}
+
 					this.EVENT_EMITTER.emit(EventReminderEvent.ShowStart, name, startAtDate);
 					this.LOGGER.log(`Event fired: Show "${name}" will start at ${startAtDate.toISO()}`);
 					ns.cancelJob(job);

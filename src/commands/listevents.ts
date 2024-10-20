@@ -1,15 +1,40 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { DateTime } from "luxon";
 
+import { ICommandHandler } from "../commandHandler.js";
 import { EventReminder } from "../eventReminder.js";
 import { Logger } from "../logger.js";
-import { ICommandHandler } from "../structures.js";
+import { MultipleClassInitializationsError, nameof, UninitializedClassError } from "../util.js";
 
 export class ListEventsCommandHandler implements ICommandHandler {
-	private static readonly INSTANCE = new ListEventsCommandHandler();
-	private static readonly LOGGER = Logger.get("ListEventsCommandHandler");
+	private static INSTANCE = new ListEventsCommandHandler();
+
+	private static LOGGER?: Logger = undefined;
 
 	private constructor() {}
+
+	public static init(logger: Logger) {
+		this.setLogger(logger);
+	}
+
+	/**
+	 * Change the {@linkcode Logger} used for future operations
+	 *
+	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
+	 * bad architecture.
+	 *
+	 * @param logger The {@linkcode Logger} to use for future operations
+	 *
+	 * @returns None
+	 *
+	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
+	 * partially initialized, either by {@linkcode ListEventsCommandHandler.init} or
+	 * {@linkcode ListEventsCommandHandler.setLogger}
+	 */
+	public static setLogger(logger: Logger) {
+		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
+		this.LOGGER = logger;
+	}
 
 	public static getInstance() {
 		return this.INSTANCE;
@@ -23,6 +48,13 @@ export class ListEventsCommandHandler implements ICommandHandler {
 	}
 
 	public async handle(interaction: ChatInputCommandInteraction) {
+		if (!ListEventsCommandHandler.LOGGER) {
+			throw new UninitializedClassError(
+				ListEventsCommandHandler.name,
+				nameof(() => ListEventsCommandHandler.LOGGER)
+			);
+		}
+
 		const executor = interaction.member as GuildMember;
 		ListEventsCommandHandler.LOGGER.log(`${executor.id} requested a list of scheduled events!`);
 

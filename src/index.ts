@@ -1,4 +1,5 @@
 import { Client, Collection, Events, GuildMember, IntentsBitField, Snowflake } from "discord.js";
+import { DateTime } from "luxon";
 import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 
 import { BoostNotifier } from "./boostNotifier.js";
@@ -6,18 +7,37 @@ import { MasterCommandHandler } from "./commandHandler.js";
 import { CrashCommandHandler } from "./commands/crash.js";
 import { DumpConfigCommandHandler } from "./commands/dumpconfig.js";
 import { ListEventsCommandHandler } from "./commands/listevents.js";
-import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs.js";
 import { StatusCommandHandler } from "./commands/status.js";
-import { UpdatedbCommandHandler } from "./commands/updatedb.js";
-import { ConfigManager } from "./configManager.js";
+import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs.js";
+import { UpdateDbCommandHandler } from "./commands/updatedb.js";
+import { ConfigDirLoadError, ConfigManager, ConfigManagerEvent, GlobalConfigLoadError } from "./configManager.js";
 import { EventReminder, EventReminderEvent } from "./eventReminder.js";
-import { Logger } from "./logger.js";
-import { ICommandHandler } from "./structures.js";
+import { LoggerFactory } from "./logger.js";
+
+export const enum ExitCode {
+	Ok,
+	Unknown,
+	BadOption,
+	BadGlobalConfig,
+	BadConfigsDir,
+	BadLogFile
+}
 
 async function main() {
-	const logger = Logger.get("main");
+	const loggerFactoryError = LoggerFactory.init(`./run/logs/${DateTime.utc().toISO().replaceAll(":", ".")}.log`);
+	if (loggerFactoryError) {
+		console.error(`${loggerFactoryError.name}: ${loggerFactoryError.message}`);
+		return ExitCode.BadLogFile;
+	}
 
-	ConfigManager.loadConfigs();
+	const configManagerInitResult = ConfigManager.init(LoggerFactory.get("ConfigManager"), "./config.json", "./run/configs");
+	if (configManagerInitResult instanceof GlobalConfigLoadError) return ExitCode.BadGlobalConfig;
+	if (configManagerInitResult instanceof ConfigDirLoadError) return ExitCode.BadConfigsDir;
+
+	const logger = LoggerFactory.get("main");
+
+	// 5. Setup discord client, part 1
+	// We need a reference to it later
 
 	const client = new Client({
 		intents: [
@@ -26,17 +46,35 @@ async function main() {
 		]
 	});
 
-	const commands: ICommandHandler[] = [
-		CrashCommandHandler.getInstance(),
-		DumpConfigCommandHandler.getInstance(),
-		ListEventsCommandHandler.getInstance(),
-		StatusCommandHandler.getInstance(),
-		UpdatedbCommandHandler.getInstance(),
-		ReloadConfigsCommandHandler.getInstance()
-	];
+	// 6. Setup command handlers
+	// We need it a reference to it later
+	// We need a reference to the client here
 
-	const masterCommandHandler = new MasterCommandHandler(client, ConfigManager.getServiceLocations(), commands);
-	const boostNotifier = new BoostNotifier(ConfigManager.getServiceLocations());
+	CrashCommandHandler.init(logger.fork("CrashCommandHandler"));
+	DumpConfigCommandHandler.init(logger.fork("DumpConfigCommandHandler"));
+	ListEventsCommandHandler.init(logger.fork("ListEventsCommandHandler"));
+	ReloadConfigsCommandHandler.init(logger.fork("ReloadConfigsCommandHandler"));
+	StatusCommandHandler.init(logger.fork("StatusCommandHandler"));
+	UpdateDbCommandHandler.init(logger.fork("UpdateDbCommandHandler"));
+
+	MasterCommandHandler.init(
+		logger.fork("MasterCommandHandler"),
+		client,
+		ConfigManager.getServiceLocations(),
+		[
+			CrashCommandHandler.getInstance(),
+			DumpConfigCommandHandler.getInstance(),
+			ListEventsCommandHandler.getInstance(),
+			ReloadConfigsCommandHandler.getInstance(),
+			StatusCommandHandler.getInstance(),
+			UpdateDbCommandHandler.getInstance()
+		]
+	);
+
+	BoostNotifier.init(logger.fork("BoostNotifier"), ConfigManager.getServiceLocations());
+
+	// 7. Setup discord client, part 2
+	// Finish the setup
 
 	const refreshMemberJobScheduler = new ToadScheduler();
 	refreshMemberJobScheduler.addSimpleIntervalJob(
@@ -56,39 +94,41 @@ async function main() {
 	);
 
 	client.on(Events.ClientReady, async () => {
-		// Definitely not null since we are responding to the "ready" event,
-		// but ts doesn't know that
-		if (!client.user) return;
+		// Definitely not null since we are listening to the ready event,
+		// but TS doesn't know that for some reason
+		if (!client.isReady()) return;
 
 		logger.log(`Logged in as ${client.user.tag}`);
-		logger.log(`Bonjour!`);
+		logger.log("Bonjour!");
+
+		// 9. Register commands
 
 		logger.log("Registering commands...");
-		await masterCommandHandler.registerCommands();
+		await MasterCommandHandler.registerCommands();
 		logger.log("Finished registering commands");
 
 		client.guilds.cache.forEach((guild) => guild.members.fetch());
 	});
 
-	client.on("interactionCreate", (interaction) => {
+	client.on(Events.InteractionCreate, (interaction) => {
 		if (!interaction.isChatInputCommand()) return;
 
-		masterCommandHandler.handle(interaction);
+		MasterCommandHandler.handle(interaction);
 	});
 
 	client.on(Events.GuildMemberUpdate, (oldMember, newMember) => {
-		boostNotifier.handle(oldMember as GuildMember, newMember).catch((e) => logger.log(`${e}`));
+		void BoostNotifier.handle(oldMember as GuildMember, newMember);
 	});
 
 	logger.log("Setting up module EventReminder...");
-	await EventReminder.init();
+	await EventReminder.init(logger.fork("EventReminder"));
 	EventReminder.on(EventReminderEvent.StoryStart, async (name, startAt) => {
 		for (const serviceLocation of ConfigManager.getServiceLocations()) {
 			try {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
 
-				const ioChannel = await guild.channels.fetch(serviceLocation.ioChannelId);
+				const ioChannel = await guild.channels.fetch(serviceLocation.primaryIoChannelId);
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
@@ -98,11 +138,14 @@ async function main() {
 				msg += `<@&${pingRoleId}>`;
 				void ioChannel.send(msg);
 				logger.log(`Announced event at guild ${guild.id}`);
-			} catch (_e: any) {
-				const e = _e as Error;
+			} catch (e) {
+				if (!(e instanceof Error)) throw e;
+
 				logger.error(`${e.name}: ${e.message}`);
 				logger.error(
-					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+					`Was processing:\n`
+					+ `  - guildId: ${serviceLocation.guildId}\n`
+					+ `  - ioChannelId: ${serviceLocation.modules.eventReminder.ioChannelId}`
 				);
 			}
 		}
@@ -113,7 +156,7 @@ async function main() {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
 
-				const ioChannel = await guild.channels.fetch(serviceLocation.ioChannelId);
+				const ioChannel = await guild.channels.fetch(serviceLocation.primaryIoChannelId);
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
@@ -142,28 +185,30 @@ async function main() {
 				void ioChannel.send(msg);
 				logger.log(`Announced event at guild ${guild.id}`);
 				logger.debug(msg);
-			} catch (_e: any) {
-				const e = _e as Error;
+			} catch (e) {
+				if (!(e instanceof Error)) throw e;
+
 				logger.error(`${e.name}: ${e.message}`);
 				logger.error(
-					`Was processing: { guildId: ${serviceLocation.guildId} , ioChannelId: ${serviceLocation.ioChannelId} }`
+					`Was processing:\n`
+					+ `  - guildId: ${serviceLocation.guildId}\n`
+					+ `  - ioChannelId: ${serviceLocation.modules.eventReminder.ioChannelId}`
 				);
 			}
 		}
 	});
 
+	ConfigManager.on(ConfigManagerEvent.ConfigsReloaded, (serviceLocations) => {
+		MasterCommandHandler.setServiceLocations(serviceLocations);
+		BoostNotifier.setServiceLocations(serviceLocations);
+	});
+
+	// 8. Login
+
 	logger.log("Logging in...");
 	await client.login(ConfigManager.getGlobalConfig().token);
+
+	return ExitCode.Ok;
 }
 
-// (async () => {
-// 	const logger = Logger.get("_start");
-// 	try {
-// 		await main();
-// 	} catch (e: any) {
-// 		logger.error("Uncaught exception!");
-// 		logger.error(`${e.name}: ${e.message}`);
-// 		logger.error(e.stack);
-// 	}
-// })();
-await main(); // todo: fix resource downloader
+process.exitCode = await main();

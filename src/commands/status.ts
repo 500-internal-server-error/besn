@@ -7,15 +7,39 @@ import {
 } from "discord.js";
 import { DateTime } from "luxon";
 
+import { ICommandHandler } from "../commandHandler.js";
 import { Logger } from "../logger.js";
-import { ICommandHandler } from "../structures.js";
-import * as Util from "../util.js";
+import { getRandomColor, MultipleClassInitializationsError, nameof, UninitializedClassError } from "../util.js";
 
 export class StatusCommandHandler implements ICommandHandler {
-	private static readonly INSTANCE = new StatusCommandHandler();
-	private static readonly LOGGER = Logger.get("StatusCommandHandler");
+	private static INSTANCE = new StatusCommandHandler();
+
+	private static LOGGER?: Logger = undefined;
 
 	private constructor() {}
+
+	public static init(logger: Logger) {
+		this.setLogger(logger);
+	}
+
+	/**
+	 * Change the {@linkcode Logger} used for future operations
+	 *
+	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
+	 * bad architecture.
+	 *
+	 * @param logger The {@linkcode Logger} to use for future operations
+	 *
+	 * @returns None
+	 *
+	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
+	 * partially initialized, either by {@linkcode StatusCommandHandler.init} or
+	 * {@linkcode StatusCommandHandler.setLogger}
+	 */
+	public static setLogger(logger: Logger) {
+		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
+		this.LOGGER = logger;
+	}
 
 	public static getInstance() {
 		return this.INSTANCE;
@@ -36,7 +60,11 @@ export class StatusCommandHandler implements ICommandHandler {
 		};
 	}
 
-	public async handle(interaction: ChatInputCommandInteraction) {
+	public handle(interaction: ChatInputCommandInteraction) {
+		if (!StatusCommandHandler.LOGGER) {
+			throw new UninitializedClassError(StatusCommandHandler.name, nameof(() => StatusCommandHandler.LOGGER));
+		}
+
 		const executor = interaction.member as GuildMember;
 		StatusCommandHandler.LOGGER.log(`${executor.id} requested bot status!`);
 
@@ -44,10 +72,10 @@ export class StatusCommandHandler implements ICommandHandler {
 		const happyEmoji = "<:mafuyulilguy:1119765248828780687>";
 		const sadEmoji = "<:enajiiempty:1132921144366878730>";
 
-		await interaction.reply({
+		void interaction.reply({
 			embeds: [
 				new EmbedBuilder()
-					.setColor(Util.getRandomColor())
+					.setColor(getRandomColor())
 					.setTitle("**Bot Status**")
 					.addFields(
 						{

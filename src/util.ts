@@ -14,9 +14,18 @@ export function getRandomColor() {
 	return random(0, 2 ** 24 - 1);
 }
 
-export function openLogFileHandle(fileName: string): fs.WriteStream {
+export function openLogFileHandle(fileName: string): fs.WriteStream | Error {
 	fs.mkdirSync(path.dirname(fileName), { recursive: true });
-	return fs.createWriteStream(fileName, { flags: "a+", mode: 0o644, flush: true });
+	const flags = "as";
+	const mode = 0o644;
+	try {
+		const fd = fs.openSync(fileName, flags, mode);
+		if (fs.fstatSync(fd).isDirectory()) return new Error(`File '${fileName}' exists and is a directory!`);
+		return fs.createWriteStream("", { fd: fd, flags: flags, mode: mode, flush: true });
+	} catch (_e: any) {
+		const e = _e as Error;
+		return e;
+	}
 }
 
 export async function downloadFile(url: string, out: string) {
@@ -31,8 +40,70 @@ export async function downloadFile(url: string, out: string) {
 	);
 }
 
-export function clamp(min: number, value: number, max: number) {
-	if (value < min) return min;
-	if (value > max) return max;
-	return value;
+/**
+ * Convenience class for use in runtime "asserts"
+ */
+export class UninitializedDependencyError extends Error {
+	public constructor(dependencyName: string, options?: ErrorOptions) {
+		super(`Use of uninitialized dependency ${dependencyName}!`, options);
+	}
+}
+
+/**
+ * Convenience class for use in runtime "asserts"
+ */
+export class UninitializedClassError extends Error {
+	public constructor(className: string, options?: ErrorOptions);
+	public constructor(className: string, propertyName?: string, options?: ErrorOptions);
+	public constructor(className: string, propertyNameOrOptions?: string | ErrorOptions, maybeOptions?: ErrorOptions) {
+		let message: string;
+		let options: ErrorOptions | undefined;
+
+		if (typeof propertyNameOrOptions === "string") {
+			const propertyName = propertyNameOrOptions;
+			message = `Use of uninitialized property ${propertyName} on class ${className}!`;
+			options = maybeOptions;
+		} else {
+			message = `Use of uninitialized class ${className}!`;
+			options = propertyNameOrOptions ?? maybeOptions;
+		}
+
+		super(message, options);
+	}
+}
+
+/**
+ * Convenience class for use in runtime "asserts"
+ */
+export class MultipleClassInitializationsError extends Error {
+	public constructor(className: string, options?: ErrorOptions);
+	public constructor(className: string, propertyName?: string, options?: ErrorOptions);
+	public constructor(className: string, propertyNameOrOptions?: string | ErrorOptions, maybeOptions?: ErrorOptions) {
+		let message: string;
+		let options: ErrorOptions | undefined;
+
+		if (typeof propertyNameOrOptions === "string") {
+			const propertyName = propertyNameOrOptions;
+			message = `Multiple initializations of property ${propertyName} on class ${className}!`;
+			options = maybeOptions;
+		} else {
+			message = `Multiple initializations of class ${className}!`;
+			options = propertyNameOrOptions ?? maybeOptions;
+		}
+
+		super(message, options);
+	}
+}
+
+/**
+ * Utility hack used to get a stringified variable name. Useful to avoid stale strings when renaming variables.
+ *
+ * @see https://stackoverflow.com/a/66935761
+ *
+ * @param f Function that returns the variable whose name is to be stringified, specifically in the format `() => name`
+ *
+ * @returns Stringified version of return value of the input function
+ */
+export function nameof(f: () => any) {
+	return f.toString().replace(/[ |()=>]/g, "");
 }
