@@ -1,14 +1,39 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from "discord.js";
 
+import { ICommandHandler } from "../commandHandler.js";
 import { EventReminder } from "../eventReminder.js";
-import { ICommandHandler } from "../structures.js";
 import { Logger } from "../logger.js";
+import { MultipleClassInitializationsError, nameof, UninitializedClassError } from "../util.js";
 
-export class UpdatedbCommandHandler implements ICommandHandler {
-	private static readonly INSTANCE = new UpdatedbCommandHandler();
-	private static readonly LOGGER = Logger.get("UpdatedbCommandHandler");
+export class UpdateDbCommandHandler implements ICommandHandler {
+	private static INSTANCE = new UpdateDbCommandHandler();
+
+	private static LOGGER?: Logger = undefined;
 
 	private constructor() {}
+
+	public static init(logger: Logger) {
+		this.setLogger(logger);
+	}
+
+	/**
+	 * Change the {@linkcode Logger} used for future operations
+	 *
+	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
+	 * bad architecture.
+	 *
+	 * @param logger The {@linkcode Logger} to use for future operations
+	 *
+	 * @returns None
+	 *
+	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
+	 * partially initialized, either by {@linkcode UpdateDbCommandHandler.init} or
+	 * {@linkcode UpdateDbCommandHandler.setLogger}
+	 */
+	public static setLogger(logger: Logger) {
+		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
+		this.LOGGER = logger;
+	}
 
 	public static getInstance() {
 		return this.INSTANCE;
@@ -22,8 +47,15 @@ export class UpdatedbCommandHandler implements ICommandHandler {
 	}
 
 	public async handle(interaction: ChatInputCommandInteraction) {
+		if (!UpdateDbCommandHandler.LOGGER) {
+			throw new UninitializedClassError(
+				UpdateDbCommandHandler.name,
+				nameof(() => UpdateDbCommandHandler.LOGGER)
+			);
+		}
+
 		const executor = interaction.member as GuildMember;
-		UpdatedbCommandHandler.LOGGER.log(`${executor.id} requested event database update!`);
+		UpdateDbCommandHandler.LOGGER.log(`${executor.id} requested event database update!`);
 
 		// This might take a while, so we start it first
 		const downloadProgress = EventReminder.refreshResources();

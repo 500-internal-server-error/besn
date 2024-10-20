@@ -92,7 +92,12 @@ export default [
 			...tsEslintPlugin.configs["recommended-type-checked"].rules,
 			...tsEslintPlugin.configs["eslint-recommended"].rules,
 
-			"@typescript-eslint/ban-ts-comment": ["off"],
+			"@typescript-eslint/ban-ts-comment": ["error", {
+				"ts-check": true,
+				"ts-expect-error": false,
+				"ts-ignore": true,
+				"ts-nocheck": true
+			}],
 			"@typescript-eslint/explicit-member-accessibility": ["error", {
 				"accessibility": "explicit"
 			}],
@@ -111,7 +116,6 @@ export default [
 			"@typescript-eslint/prefer-literal-enum-member": ["error"],
 			"@typescript-eslint/prefer-optional-chain": ["error"],
 			"@typescript-eslint/prefer-string-starts-ends-with": ["error"],
-			"@typescript-eslint/prefer-ts-expect-error": ["error"],
 			"@typescript-eslint/require-array-sort-compare": ["error", {
 				"ignoreStringArrays": true
 			}],
@@ -163,9 +167,9 @@ export default [
 			"@stylistic/nonblock-statement-body-position": ["error"],
 			"@stylistic/padded-blocks": ["error", "never"],
 			"@stylistic/quote-props": ["error", "as-needed", {
-				"keywords": true,
+				"keywords": false,
 				"unnecessary": true,
-				"numbers": false
+				"numbers": true
 			}],
 			"@stylistic/quotes": ["error", "double", {
 				"allowTemplateLiterals": true

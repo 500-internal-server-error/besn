@@ -3,21 +3,22 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "discord.js": "^14.15.3",
+    "discord.js": "^14.16.3",
     "jsonfile": "^6.1.0",
     "luxon": "^3.5.0",
     "node-schedule": "^2.1.1",
+    "toad-scheduler": "^3.0.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^2.6.2",
+    "@stylistic/eslint-plugin": "^2.9.0",
     "@types/jsonfile": "^6.1.4",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^22.2.0",
+    "@types/node": "^22.7.6",
     "@types/node-schedule": "^2.1.7",
-    "eslint": "^9.9.0",
-    "tsx": "^4.17.0",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^8.0.1"
+    "eslint": "^9.12.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.9.0"
   }
 }

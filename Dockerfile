@@ -20,7 +20,6 @@ RUN ["apk", "add", "--no-cache", "--update", "nodejs-current", "npm"]
 COPY . .
 
 RUN ["npm", "ci"]
-RUN ["env"]
 # We need variable expansion but we don't need the shell, so exec it away
 RUN ["sh", "-c", "exec", "npx", "eslint", "$PKGDIR/src"]
 RUN ["npx", "tsc"]

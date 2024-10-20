@@ -1,23 +1,55 @@
 import { GuildMember, TextChannel } from "discord.js";
 
+import { ServiceLocation } from "./configManager.js";
 import { Logger } from "./logger.js";
-import { ServiceLocation } from "./structures.js";
+import { MultipleClassInitializationsError, nameof, UninitializedClassError } from "./util.js";
 
 export class BoostNotifier {
-	private static readonly LOGGER = Logger.get("BoostNotifier");
+	private static LOGGER?: Logger = undefined;
 
-	private serviceLocations: readonly ServiceLocation[];
+	private static SERVICE_LOCATIONS?: readonly ServiceLocation[] = undefined;
 
-	public constructor(serviceLocations: readonly ServiceLocation[]) {
-		this.serviceLocations = serviceLocations;
+	private constructor() {}
+
+	public static init(logger: Logger, serviceLocations: readonly ServiceLocation[]) {
+		this.setLogger(logger);
+		this.setServiceLocations(serviceLocations);
 	}
 
-	public async handle(oldMember: GuildMember, newMember: GuildMember) {
-		for (const serviceLocation of this.serviceLocations) {
+	/**
+	 * Change the {@linkcode Logger} used for future operations
+	 *
+	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
+	 * bad architecture.
+	 *
+	 * @param logger The {@linkcode Logger} to use for future operations
+	 *
+	 * @returns None
+	 *
+	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
+	 * partially initialized, either by {@linkcode BoostNotifier.init} or {@linkcode BoostNotifier.setLogger}
+	 */
+	public static setLogger(logger: Logger) {
+		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
+		this.LOGGER = logger;
+	}
+
+	public static setServiceLocations(serviceLocations: readonly ServiceLocation[]) {
+		this.SERVICE_LOCATIONS = serviceLocations;
+	}
+
+	public static async handle(oldMember: GuildMember, newMember: GuildMember) {
+		if (!this.LOGGER) {
+			throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
+		}
+
+		if (!this.SERVICE_LOCATIONS) {
+			throw new UninitializedClassError(this.name, nameof(() => this.SERVICE_LOCATIONS));
+		}
+
+		for (const serviceLocation of this.SERVICE_LOCATIONS) {
 			// Check if the member update was from a location we service, otherwise keep looking
 			if (oldMember.guild.id !== serviceLocation.guildId) continue;
-
-			BoostNotifier.LOGGER.debug(`User ${oldMember.id} from guild ${oldMember.guild.id} changed somehow`);
 
 			// The member is in a location we service
 			// Check if they gained or lost the role we care about
@@ -27,37 +59,42 @@ export class BoostNotifier {
 			const newMemberRoles = newMember.roles.cache;
 			const boostRoleId = serviceLocation.modules.boostNotifier.boostRole;
 
-			BoostNotifier.LOGGER.debug(`Previously had these roles: ${oldMemberRoles.toJSON().toString()}`);
-			BoostNotifier.LOGGER.debug(`Now has these roles: ${newMemberRoles.toJSON().toString()}`);
-
-			let message = "";
+			let message: string | undefined;
+			let ioChannelId: string | undefined;
 			if (!oldMemberRoles.has(boostRoleId) && newMemberRoles.has(boostRoleId)) {
-				message = `<@${oldMember.id}> started boosting the server! :tada:`;
+				const { userKey, formatMessage } = serviceLocation.modules.boostNotifier.boostMessage;
+				message = formatMessage.replaceAll(userKey, oldMember.id);
+
+				const configIoChannelId = serviceLocation.modules.boostNotifier.ioChannelId;
+				ioChannelId = typeof configIoChannelId === "string" ? configIoChannelId : configIoChannelId.boost;
 			} else if (oldMemberRoles.has(boostRoleId) && !newMemberRoles.has(boostRoleId)) {
-				message = `<@${oldMember.id}> is no longer boosting the server :broken_heart:`;
-			} else if (!oldMemberRoles.has(boostRoleId) && !newMemberRoles.has(boostRoleId)) {
-				message = `<@${oldMember.id}> is not currently boosting the server (unsure whether they were previously)`;
-			} else if (oldMemberRoles.has(boostRoleId) && newMemberRoles.has(boostRoleId)) {
-				message = `<@${oldMember.id}> is currently boosting the server (unsure whether they were previously)`;
+				const { userKey, formatMessage } = serviceLocation.modules.boostNotifier.deboostMessage;
+				message = formatMessage.replaceAll(userKey, oldMember.id);
+
+				const configIoChannelId = serviceLocation.modules.boostNotifier.ioChannelId;
+				ioChannelId = typeof configIoChannelId === "string" ? configIoChannelId : configIoChannelId.deboost;
 			}
 
+			// If message and/or ioChannelId is still empty it means something changed, but is uninteresting to us
+			if (!message || !ioChannelId) return;
+
 			const guild = oldMember.guild;
-			const ioChannel = await guild.channels.fetch(serviceLocation.modules.boostNotifier.ioChannelId);
+			const ioChannel = await guild.channels.fetch(ioChannelId);
 
 			if (!ioChannel?.isTextBased()) {
-				BoostNotifier.LOGGER.warn(
+				this.LOGGER.warn(
 					`Caught nitro (de)boosting action in guild ${guild.id} caused by user ${oldMember.id}`
 					+ ` but its configured IO channel ${ioChannel?.id} is not a text channel!`
 				);
-			} else if (message.length > 0) {
-				BoostNotifier.LOGGER.log(message);
-				void (ioChannel as TextChannel).send(message);
 			}
+
+			this.LOGGER.log(message);
+			void (ioChannel as TextChannel).send(message);
 
 			// Stop looking if we did stuff
 			return;
 		}
 
-		BoostNotifier.LOGGER.log(`Something about ${oldMember.id} changed but they're not in a serviced guild!`);
+		this.LOGGER.log(`Something about ${oldMember.id} changed but they're not in a serviced guild!`);
 	}
 }

@@ -3,10 +3,39 @@ import * as fs from "fs";
 import jsonfile from "jsonfile";
 import { DateTime } from "luxon";
 import * as ns from "node-schedule";
+import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 
 import { Logger } from "./logger.js";
-import { VirtualLive } from "./structures.js";
-import * as util from "./util.js";
+import { downloadFile, MultipleClassInitializationsError, nameof, UninitializedClassError } from "./util.js";
+
+// Not comprehensive, only includes details we are interested in
+
+export const enum StoryType {
+	Marathon = "marathon",
+	CheerfulCarnival = "cheerful_carnival"
+}
+
+export type Story = {
+	id: number;
+	name: string;
+	eventType: StoryType;
+	startAt: number;
+};
+
+export type VirtualLiveSchedule = {
+	virtualLiveId: number;
+	seq: number;
+	startAt: number;
+	endAt: number;
+};
+
+export type VirtualLive = {
+	id: number;
+	name: string;
+	startAt: number;
+	endAt: number;
+	virtualLiveSchedules: VirtualLiveSchedule[];
+};
 
 export const enum EventReminderEvent {
 	StoryStart = "storyStart",
@@ -14,13 +43,65 @@ export const enum EventReminderEvent {
 }
 
 export class EventReminder {
-	private static readonly LOGGER = Logger.get("EventReminder");
-	private static readonly EVENT_EMITTER = new EventEmitter();
+	private static LOGGER?: Logger = undefined;
+
+	private static EVENT_EMITTER?: EventEmitter = undefined;
+	private static SCHEDULER?: ToadScheduler = undefined;
+
+	private static SCHEDULED_EVENTS?: ns.Job[] = undefined;
 
 	private constructor() {}
 
-	public static async init() {
+	public static async init(logger: Logger) {
+		this.setLogger(logger);
+
+		if (this.EVENT_EMITTER) {
+			throw new MultipleClassInitializationsError(this.name, nameof(() => this.EVENT_EMITTER));
+		}
+		this.EVENT_EMITTER = new EventEmitter();
+
+		if (this.SCHEDULER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.SCHEDULER));
+		this.SCHEDULER = new ToadScheduler();
+		this.SCHEDULER.addSimpleIntervalJob(
+			new SimpleIntervalJob(
+				{ hours: 1 },
+				new AsyncTask(
+					"EventReminder: ResourceRefreshJob",
+					async () => {
+						if (!this.LOGGER) throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
+
+						this.LOGGER.log("Refreshing resources...");
+						await this.refreshResources();
+						this.LOGGER.log("Finished refreshing resources");
+					}
+				)
+			)
+		);
+
+		if (this.SCHEDULED_EVENTS) {
+			throw new MultipleClassInitializationsError(this.name, nameof(() => this.SCHEDULED_EVENTS));
+		}
+		this.SCHEDULED_EVENTS = [];
+
 		await this.refreshResources();
+	}
+
+	/**
+	 * Change the {@linkcode Logger} used for future operations
+	 *
+	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
+	 * bad architecture.
+	 *
+	 * @param logger The {@linkcode Logger} to use for future operations
+	 *
+	 * @returns None
+	 *
+	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
+	 * partially initialized, either by {@linkcode EventReminder.init} or {@linkcode EventReminder.setLogger}
+	 */
+	public static setLogger(logger: Logger) {
+		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
+		this.LOGGER = logger;
 	}
 
 	public static on(
@@ -34,20 +115,14 @@ export class EventReminder {
 	): void;
 
 	public static on(eventName: EventReminderEvent, listener: (...args: any[]) => any): void {
-		// TS fixed an old bug that became a feature so now we need this hack until @types/node fixes it too
-		/* eslint-disable @typescript-eslint/no-unsafe-call */
-		// @ts-expect-error
+		if (!this.EVENT_EMITTER) throw new UninitializedClassError(this.name, nameof(() => this.EVENT_EMITTER));
 		this.EVENT_EMITTER.on(eventName, listener);
-		/* eslint-enable @typescript-eslint/no-unsafe-call */
 	}
 
-	/* eslint-disable
-		@typescript-eslint/no-unsafe-argument,
-		@typescript-eslint/no-unsafe-assignment,
-		@typescript-eslint/no-unsafe-member-access,
-		@typescript-eslint/no-unsafe-return
-	*/
 	public static async refreshResources() {
+		if (!this.SCHEDULED_EVENTS) throw new UninitializedClassError(this.name, nameof(() => this.SCHEDULED_EVENTS));
+		if (!this.LOGGER) throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
+
 		// Prepare folder to store them in
 		// Wait until we are done (sync), before downloading, otherwise they have nowhere to go
 
@@ -67,34 +142,28 @@ export class EventReminder {
 
 		this.LOGGER.log("Downloading resources files...");
 		await Promise.allSettled([
-			util.downloadFile(
+			downloadFile(
 				"https://sekai-world.github.io/sekai-master-db-en-diff/events.json",
 				"./run/resources/stories.json"
 			),
-			util.downloadFile(
+			downloadFile(
 				"https://sekai-world.github.io/sekai-master-db-en-diff/virtualLives.json",
 				"./run/resources/shows.json"
 			)
 		]);
 
 		// Afterwards we can setup the scheduler using data from the files we downloaded
-		// Reads can be conccurent (async), again we don't need to wait for one to finish reading before reading another
-		// But we do again need to wait for all of them to finish
 
 		this.LOGGER.log("Reading resource files...");
 
-		// This should be fine, since we have a default value in case the promise was not fulfilled
-
-		// @ts-expect-error
-		const [stories, shows]: [any[], VirtualLive[]] = (await Promise.allSettled([
-			jsonfile.readFileSync("./run/resources/stories.json"),
-			jsonfile.readFileSync("./run/resources/shows.json")
-		])).map((result) => result.status === "fulfilled" ? result.value : []);
+		const stories = jsonfile.readFileSync("./run/resources/stories.json", { throws: false }) as Story[] | null ?? [];
+		const shows = jsonfile.readFileSync("./run/resources/shows.json", { throws: false }) as VirtualLive[] | null ?? [];
 
 		// We can cancel everything so we start clean
 
 		this.LOGGER.log("Clearing all scheduled events...");
-		await ns.gracefulShutdown();
+		for (const job of this.SCHEDULED_EVENTS.values()) ns.cancelJob(job);
+		this.SCHEDULED_EVENTS.length = 0;
 
 		// Get a current time (msecs since Unix Epoch) to measure everything against
 		const currentTime = DateTime.utc().toMillis();
@@ -149,15 +218,21 @@ export class EventReminder {
 
 			this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
-			const job = ns.scheduleJob(name, actualRemindAtDate.toJSDate(), () => {
-				// TS fixed an old bug that became a feature so now we need this hack until @types/node fixes it too
-				/* eslint-disable @typescript-eslint/no-unsafe-call */
-				// @ts-expect-error
+			const job = ns.scheduleJob(`EventReminder: ${name}`, actualRemindAtDate.toJSDate(), () => {
+				if (!this.EVENT_EMITTER) {
+					throw new UninitializedClassError(this.name, nameof(() => this.EVENT_EMITTER));
+				}
+
+				if (!this.LOGGER) {
+					throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
+				}
+
 				this.EVENT_EMITTER.emit(EventReminderEvent.StoryStart, name, startAtDate);
-				/* eslint-enable @typescript-eslint/no-unsafe-call */
 				this.LOGGER.log(`Event fired: Story "${name}" released`);
 				ns.cancelJob(job);
 			});
+
+			this.SCHEDULED_EVENTS.push(job);
 		}
 
 		this.LOGGER.log("Scheduling future shows...");
@@ -209,19 +284,24 @@ export class EventReminder {
 
 				this.LOGGER.debug(`    - Actual Remind at: ${actualRemindAtDate.toISO()}`);
 
-				const job = ns.scheduleJob(`${name} #${i + 1}`, actualRemindAtDate.toJSDate(), () => {
-					// TS fixed an old bug that became a feature so now we need this hack until @types/node fixes it too
-					/* eslint-disable @typescript-eslint/no-unsafe-call */
-					// @ts-expect-error
+				const job = ns.scheduleJob(`EventReminder: ${name} #${i + 1}`, actualRemindAtDate.toJSDate(), () => {
+					if (!this.EVENT_EMITTER) {
+						throw new UninitializedClassError(this.name, nameof(() => this.EVENT_EMITTER));
+					}
+
+					if (!this.LOGGER) {
+						throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
+					}
+
 					this.EVENT_EMITTER.emit(EventReminderEvent.ShowStart, name, startAtDate);
-					/* eslint-enable @typescript-eslint/no-unsafe-call */
 					this.LOGGER.log(`Event fired: Show "${name}" will start at ${startAtDate.toISO()}`);
 					ns.cancelJob(job);
 				});
+
+				this.SCHEDULED_EVENTS.push(job);
 			}
 		}
 	}
-	/* eslint-enable */
 
 	public static getScheduledEvents() {
 		return ns.scheduledJobs;
