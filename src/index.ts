@@ -36,19 +36,12 @@ async function main() {
 
 	const logger = LoggerFactory.get("main");
 
-	// 5. Setup discord client, part 1
-	// We need a reference to it later
-
 	const client = new Client({
 		intents: [
 			IntentsBitField.Flags.Guilds,
 			IntentsBitField.Flags.GuildMembers
 		]
 	});
-
-	// 6. Setup command handlers
-	// We need it a reference to it later
-	// We need a reference to the client here
 
 	CrashCommandHandler.init(logger.fork("CrashCommandHandler"));
 	DumpConfigCommandHandler.init(logger.fork("DumpConfigCommandHandler"));
@@ -72,9 +65,6 @@ async function main() {
 	);
 
 	BoostNotifier.init(logger.fork("BoostNotifier"), ConfigManager.getServiceLocations());
-
-	// 7. Setup discord client, part 2
-	// Finish the setup
 
 	const refreshMemberJobScheduler = new ToadScheduler();
 	refreshMemberJobScheduler.addSimpleIntervalJob(
@@ -100,8 +90,6 @@ async function main() {
 
 		logger.log(`Logged in as ${client.user.tag}`);
 		logger.log("Bonjour!");
-
-		// 9. Register commands
 
 		logger.log("Registering commands...");
 		await MasterCommandHandler.registerCommands();
@@ -202,8 +190,6 @@ async function main() {
 		MasterCommandHandler.setServiceLocations(serviceLocations);
 		BoostNotifier.setServiceLocations(serviceLocations);
 	});
-
-	// 8. Login
 
 	logger.log("Logging in...");
 	await client.login(ConfigManager.getGlobalConfig().token);

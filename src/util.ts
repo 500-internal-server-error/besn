@@ -40,18 +40,12 @@ export async function downloadFile(url: string, out: string) {
 	);
 }
 
-/**
- * Convenience class for use in runtime "asserts"
- */
 export class UninitializedDependencyError extends Error {
 	public constructor(dependencyName: string, options?: ErrorOptions) {
 		super(`Use of uninitialized dependency ${dependencyName}!`, options);
 	}
 }
 
-/**
- * Convenience class for use in runtime "asserts"
- */
 export class UninitializedClassError extends Error {
 	public constructor(className: string, options?: ErrorOptions);
 	public constructor(className: string, propertyName?: string, options?: ErrorOptions);
@@ -72,9 +66,6 @@ export class UninitializedClassError extends Error {
 	}
 }
 
-/**
- * Convenience class for use in runtime "asserts"
- */
 export class MultipleClassInitializationsError extends Error {
 	public constructor(className: string, options?: ErrorOptions);
 	public constructor(className: string, propertyName?: string, options?: ErrorOptions);
@@ -95,15 +86,6 @@ export class MultipleClassInitializationsError extends Error {
 	}
 }
 
-/**
- * Utility hack used to get a stringified variable name. Useful to avoid stale strings when renaming variables.
- *
- * @see https://stackoverflow.com/a/66935761
- *
- * @param f Function that returns the variable whose name is to be stringified, specifically in the format `() => name`
- *
- * @returns Stringified version of return value of the input function
- */
 export function nameof(f: () => any) {
 	return f.toString().replace(/[ |()=>]/g, "");
 }
