@@ -116,7 +116,7 @@ async function main() {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
 
-				const ioChannel = await guild.channels.fetch(serviceLocation.primaryIoChannelId);
+				const ioChannel = await guild.channels.fetch(serviceLocation.modules.eventReminder.ioChannelId);
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
@@ -144,7 +144,7 @@ async function main() {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
 
-				const ioChannel = await guild.channels.fetch(serviceLocation.primaryIoChannelId);
+				const ioChannel = await guild.channels.fetch(serviceLocation.modules.eventReminder.ioChannelId);
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
