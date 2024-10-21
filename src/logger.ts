@@ -136,22 +136,22 @@ export class Logger {
 	}
 
 	public debug(message: string) {
-		if (this.minLogLevel < LogLevel.Debug) return;
+		if (this.minLogLevel > LogLevel.Debug) return;
 		this.logWriter.write(new LogEvent(DateTime.utc().toMillis(), this.prefix, LogLevel.Debug, message));
 	}
 
 	public log(message: string) {
-		if (this.minLogLevel < LogLevel.Log) return;
+		if (this.minLogLevel > LogLevel.Log) return;
 		this.logWriter.write(new LogEvent(DateTime.utc().toMillis(), this.prefix, LogLevel.Log, message));
 	}
 
 	public warn(message: string) {
-		if (this.minLogLevel < LogLevel.Warn) return;
+		if (this.minLogLevel > LogLevel.Warn) return;
 		this.logWriter.write(new LogEvent(DateTime.utc().toMillis(), this.prefix, LogLevel.Warn, message));
 	}
 
 	public error(message: string) {
-		if (this.minLogLevel < LogLevel.Error) return;
+		if (this.minLogLevel > LogLevel.Error) return;
 		this.logWriter.write(new LogEvent(DateTime.utc().toMillis(), this.prefix, LogLevel.Error, message));
 	}
 }
