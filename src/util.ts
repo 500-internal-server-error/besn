@@ -89,3 +89,21 @@ export class MultipleClassInitializationsError extends Error {
 export function nameof(f: () => any) {
 	return f.toString().replace(/[ |()=>]/g, "");
 }
+
+export abstract class Enum<T> {
+	protected readonly instanceId: number;
+	protected readonly value: T | undefined;
+
+	protected constructor(instanceId: number, value?: T) {
+		this.instanceId = instanceId;
+		this.value = value;
+	}
+
+	public valueOf(): number {
+		return this.instanceId;
+	}
+
+	public toString(): string {
+		return this.value?.toString() ?? this.instanceId.toString();
+	}
+}

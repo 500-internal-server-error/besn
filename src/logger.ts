@@ -4,11 +4,17 @@ import { DateTime } from "luxon";
 import { Colorizer } from "./colorizer.js";
 import * as util from "./util.js";
 
-export const enum LogLevel {
-	Debug = "DEBUG",
-	Log = "LOG",
-	Warn = "WARN",
-	Error = "ERROR"
+export class LogLevel extends util.Enum<string> {
+	private static INSTANCE_COUNT = 0;
+
+	public static readonly Debug = new LogLevel("DEBUG");
+	public static readonly Log = new LogLevel("LOG");
+	public static readonly Warn = new LogLevel("WARN");
+	public static readonly Error = new LogLevel("ERROR");
+
+	private constructor(value: string) {
+		super(LogLevel.INSTANCE_COUNT++, value);
+	}
 }
 
 export class LogEvent {
@@ -35,7 +41,7 @@ export class LogEvent {
 		out += Colorizer.reset(" ");
 
 		/* eslint-disable @stylistic/max-statements-per-line */
-		const formattedMessage = `[${this.source} ${this.level}]: ${this.message}`;
+		const formattedMessage = `[${this.source} ${this.level.toString()}]: ${this.message}`;
 		switch (this.level) {
 			case LogLevel.Debug: out += Colorizer.brightMagenta(formattedMessage); break;
 			case LogLevel.Log: out += Colorizer.brightWhite(formattedMessage); break;
