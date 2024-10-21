@@ -103,6 +103,10 @@ export abstract class Enum<T> {
 		return this.instanceId;
 	}
 
+	public toJSON(): string {
+		return this.value?.toString() ?? this.instanceId.toString();
+	}
+
 	public toString(): string {
 		return this.value?.toString() ?? this.instanceId.toString();
 	}
