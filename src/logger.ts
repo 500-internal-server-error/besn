@@ -111,44 +111,64 @@ export class CompositeLogWriter implements ILogWriter {
 export class Logger {
 	private readonly prefix: string;
 	private logWriter: ILogWriter;
+	/**
+	 * Minimum log level to actually log, e.g.: if set to warn, then log and
+	 * debug messages won't be saved, only warn and error
+	 */
+	private minLogLevel: LogLevel;
 
-	public constructor(prefix: string, logWriter: ILogWriter) {
+	public constructor(prefix: string, logWriter: ILogWriter, minLogLevel: LogLevel) {
 		this.prefix = prefix;
 		this.logWriter = logWriter;
+		this.minLogLevel = minLogLevel;
 	}
 
 	public setLogWriter(logWriter: ILogWriter) {
 		this.logWriter = logWriter;
 	}
 
+	public setMinLogLevel(minLogLevel: LogLevel) {
+		this.minLogLevel = minLogLevel;
+	}
+
 	public fork(prefix: string): Logger {
-		return new Logger(prefix, this.logWriter);
+		return new Logger(prefix, this.logWriter, this.minLogLevel);
 	}
 
 	public debug(message: string) {
+		if (this.minLogLevel < LogLevel.Debug) return;
 		this.logWriter.write(new LogEvent(DateTime.utc().toMillis(), this.prefix, LogLevel.Debug, message));
 	}
 
 	public log(message: string) {
+		if (this.minLogLevel < LogLevel.Log) return;
 		this.logWriter.write(new LogEvent(DateTime.utc().toMillis(), this.prefix, LogLevel.Log, message));
 	}
 
 	public warn(message: string) {
+		if (this.minLogLevel < LogLevel.Warn) return;
 		this.logWriter.write(new LogEvent(DateTime.utc().toMillis(), this.prefix, LogLevel.Warn, message));
 	}
 
 	public error(message: string) {
+		if (this.minLogLevel < LogLevel.Error) return;
 		this.logWriter.write(new LogEvent(DateTime.utc().toMillis(), this.prefix, LogLevel.Error, message));
 	}
 }
 
 export class LoggerFactory {
+	private static DEFAULT_PREFIX: string = `${this.name} (default)`;
 	private static DEFAULT_LOG_WRITER: ILogWriter = new ConsoleLogWriter();
-	private static DEFAULT_LOGGER: Logger = new Logger(`${this.name} (default)`, this.DEFAULT_LOG_WRITER);
+	private static DEFAULT_MIN_LOG_LEVEL: LogLevel = LogLevel.Debug;
+	private static DEFAULT_LOGGER: Logger = new Logger(
+		this.DEFAULT_PREFIX,
+		this.DEFAULT_LOG_WRITER,
+		this.DEFAULT_MIN_LOG_LEVEL
+	);
 
 	private constructor() {}
 
-	public static init(logFilePath: string): Error | void {
+	public static init(logFilePath: string, minLogLevel: LogLevel): Error | void {
 		const consoleLogWriter = new ConsoleLogWriter();
 		let fileBasedLogWriter: FileBasedLogWriter;
 		try {
@@ -161,16 +181,21 @@ export class LoggerFactory {
 		}
 		const compositeLogWriter = new CompositeLogWriter([consoleLogWriter, fileBasedLogWriter]);
 
-		this.DEFAULT_LOG_WRITER = compositeLogWriter;
-		this.DEFAULT_LOGGER.setLogWriter(this.DEFAULT_LOG_WRITER);
+		this.setDefaultLogWriter(compositeLogWriter);
+		this.setDefaultMinLogLevel(minLogLevel);
+		this.DEFAULT_LOGGER = new Logger(this.DEFAULT_PREFIX, this.DEFAULT_LOG_WRITER, this.DEFAULT_MIN_LOG_LEVEL);
+	}
+
+	public static setDefaultMinLogLevel(minLogLevel: LogLevel) {
+		this.DEFAULT_MIN_LOG_LEVEL = minLogLevel;
 	}
 
 	public static setDefaultLogWriter(defaultLogWriter: ILogWriter) {
 		this.DEFAULT_LOG_WRITER = defaultLogWriter;
 	}
 
-	public static get(prefix: string, logWriter?: ILogWriter) {
+	public static get(prefix: string, logWriter?: ILogWriter, minLogLevel?: LogLevel) {
 		if (!logWriter) return this.DEFAULT_LOGGER.fork(prefix);
-		return new Logger(prefix, logWriter);
+		return new Logger(prefix, logWriter, minLogLevel ?? this.DEFAULT_MIN_LOG_LEVEL);
 	}
 }
