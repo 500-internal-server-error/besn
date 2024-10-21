@@ -2,9 +2,9 @@ import * as fs from "fs";
 import { DateTime } from "luxon";
 
 import { Colorizer } from "./colorizer.js";
-import * as util from "./util.js";
+import { Enum, openLogFileHandle } from "./util.js";
 
-export class LogLevel extends util.Enum<string> {
+export class LogLevel extends Enum<string> {
 	private static INSTANCE_COUNT = 0;
 
 	public static readonly Debug = new LogLevel("DEBUG");
@@ -68,7 +68,7 @@ export class FileBasedLogWriter implements ILogWriter {
 	}
 
 	public static openFile(file: string) {
-		const result = util.openLogFileHandle(file);
+		const result = openLogFileHandle(file);
 		if (result instanceof Error) {
 			throw new Error(`Attempted to write to bad file handle! Error: ${result.message}`);
 		} else {
