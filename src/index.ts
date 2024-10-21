@@ -77,6 +77,10 @@ async function main(args: string[]) {
 
 	const logger = LoggerFactory.get("main");
 
+	process.on("uncaughtExceptionMonitor", (err, origin) => {
+		logger.error(`${err.name} (${origin}): ${err.message}\n\n${err.stack}`);
+	});
+
 	const client = new Client({
 		intents: [
 			IntentsBitField.Flags.Guilds,
