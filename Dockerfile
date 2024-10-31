@@ -38,4 +38,4 @@ COPY --from=build "$PKGDIR/node_modules" "$PKGDIR/node_modules"
 # Again, we want variable expansion but we don't want the shell, exec it away again
 # Also prevent users from overriding CMD
 # Theres probably a nicer way to do this than relying on shelling out to pwd but for now it works
-ENTRYPOINT exec node --experimental-default-type=module --enable-source-maps "$(pwd)/dist/index.js"
+ENTRYPOINT exec node --experimental-default-type=module --enable-source-maps "$(pwd)/dist/index.js" -W 1

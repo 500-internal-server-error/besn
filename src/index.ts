@@ -1,5 +1,6 @@
 import { Client, Collection, Events, GuildMember, IntentsBitField, Snowflake } from "discord.js";
 import { DateTime } from "luxon";
+import * as path from "path";
 import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 
 import { BoostNotifier } from "./boostNotifier.js";
@@ -12,7 +13,7 @@ import { ReloadConfigsCommandHandler } from "./commands/reloadconfigs.js";
 import { UpdateDbCommandHandler } from "./commands/updatedb.js";
 import { ConfigDirLoadError, ConfigManager, ConfigManagerEvent, GlobalConfigLoadError } from "./configManager.js";
 import { EventReminder, EventReminderEvent } from "./eventReminder.js";
-import { LoggerFactory } from "./logger.js";
+import { LoggerFactory, LogLevel } from "./logger.js";
 
 export const enum ExitCode {
 	Ok,
@@ -23,8 +24,48 @@ export const enum ExitCode {
 	BadLogFile
 }
 
-async function main() {
-	const loggerFactoryError = LoggerFactory.init(`./run/logs/${DateTime.utc().toISO().replaceAll(":", ".")}.log`);
+async function main(args: string[]) {
+	const options = {
+		logFileName: `./run/logs/${DateTime.utc().toISO().replaceAll(":", ".")}.log`,
+		minLogLevel: LogLevel.Debug
+	};
+
+	// TS cannot understand args.length > 0, so explicit cast is needed
+	// https://github.com/microsoft/TypeScript/issues/30406
+	if (args.length > 0) {
+		const args2 = [...args];
+		const cleanArgv0 = path.basename(args2.shift()!);
+		while (args2.length > 0) {
+			const arg = args2.shift()!;
+			if (arg === "-h" || arg === "--help") {
+				let out = `Usage: ${cleanArgv0} [OPTION]...\n`;
+				out += "\n";
+				out += "  -h, --help      Print this help and exit\n";
+				out += "  -W, --log-level Set log level (0: Debug, 1: Log, 2: Warn, 3: Error)";
+				console.log(out);
+				return ExitCode.Ok;
+			} else if (arg === "-W" || arg === "--log-level") {
+				const level = args2.shift();
+				if (level === "debug" || level === "0") {
+					options.minLogLevel = LogLevel.Debug;
+				} else if (level === "log" || level === "1") {
+					options.minLogLevel = LogLevel.Log;
+				} else if (level === "warn" || level === "2") {
+					options.minLogLevel = LogLevel.Warn;
+				} else if (level === "error" || level === "3") {
+					options.minLogLevel = LogLevel.Error;
+				} else {
+					console.error(`${cleanArgv0}: unknown option for ${arg}: ${level}`);
+					return ExitCode.BadOption;
+				}
+			} else {
+				console.error(`${cleanArgv0}: unknown option: ${arg}`);
+				return ExitCode.BadOption;
+			}
+		}
+	}
+
+	const loggerFactoryError = LoggerFactory.init(options.logFileName, options.minLogLevel);
 	if (loggerFactoryError) {
 		console.error(`${loggerFactoryError.name}: ${loggerFactoryError.message}`);
 		return ExitCode.BadLogFile;
@@ -36,8 +77,9 @@ async function main() {
 
 	const logger = LoggerFactory.get("main");
 
-	// 5. Setup discord client, part 1
-	// We need a reference to it later
+	process.on("uncaughtExceptionMonitor", (err, origin) => {
+		logger.error(`${err.name} (${origin}): ${err.message}\n\n${err.stack}`);
+	});
 
 	const client = new Client({
 		intents: [
@@ -45,10 +87,6 @@ async function main() {
 			IntentsBitField.Flags.GuildMembers
 		]
 	});
-
-	// 6. Setup command handlers
-	// We need it a reference to it later
-	// We need a reference to the client here
 
 	CrashCommandHandler.init(logger.fork("CrashCommandHandler"));
 	DumpConfigCommandHandler.init(logger.fork("DumpConfigCommandHandler"));
@@ -72,9 +110,6 @@ async function main() {
 	);
 
 	BoostNotifier.init(logger.fork("BoostNotifier"), ConfigManager.getServiceLocations());
-
-	// 7. Setup discord client, part 2
-	// Finish the setup
 
 	const refreshMemberJobScheduler = new ToadScheduler();
 	refreshMemberJobScheduler.addSimpleIntervalJob(
@@ -101,8 +136,6 @@ async function main() {
 		logger.log(`Logged in as ${client.user.tag}`);
 		logger.log("Bonjour!");
 
-		// 9. Register commands
-
 		logger.log("Registering commands...");
 		await MasterCommandHandler.registerCommands();
 		logger.log("Finished registering commands");
@@ -128,7 +161,7 @@ async function main() {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
 
-				const ioChannel = await guild.channels.fetch(serviceLocation.primaryIoChannelId);
+				const ioChannel = await guild.channels.fetch(serviceLocation.modules.eventReminder.ioChannelId);
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
@@ -156,7 +189,7 @@ async function main() {
 				const guild = await client.guilds.fetch(serviceLocation.guildId);
 				if (!guild) continue;
 
-				const ioChannel = await guild.channels.fetch(serviceLocation.primaryIoChannelId);
+				const ioChannel = await guild.channels.fetch(serviceLocation.modules.eventReminder.ioChannelId);
 				if (!ioChannel) continue;
 				if (!ioChannel.isTextBased()) continue;
 
@@ -203,12 +236,10 @@ async function main() {
 		BoostNotifier.setServiceLocations(serviceLocations);
 	});
 
-	// 8. Login
-
 	logger.log("Logging in...");
 	await client.login(ConfigManager.getGlobalConfig().token);
 
 	return ExitCode.Ok;
 }
 
-process.exitCode = await main();
+process.exitCode = await main(process.argv.slice(1));

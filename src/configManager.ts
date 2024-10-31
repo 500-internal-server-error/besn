@@ -84,27 +84,6 @@ export class ConfigManager {
 
 	private constructor() {}
 
-	/**
-	 * Convenience method to initialize this class, combining setting a {@linkcode Logger} and initializing the
-	 * {@linkcode GlobalConfigFile} structure and {@linkcode ServiceLocation} configs. See:
-	 * - {@linkcode ConfigManager.setLogger}
-	 * - {@linkcode ConfigManager.loadGlobalConfig} and {@linkcode ConfigManager.setGlobalConfig}
-	 * - {@linkcode ConfigManager.loadConfigs} and {@linkcode ConfigManager.setConfigs}
-	 *
-	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
-	 * bad architecture.
-	 *
-	 * @param logger The {@linkcode Logger} to use for future operations
-	 * @param globalConfigFilePath Path to the global config file
-	 * @param configsDirPath Path to the service location configs directory
-	 *
-	 * @returns None if no errors occurred during initialization, an error if loading the global config file failed or
-	 * if reading the service location configs directory failed, or an array of errors if any failures occurred while
-	 * loading service location configs
-	 *
-	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
-	 * partially initialized, either by {@linkcode ConfigManager.init} or {@linkcode ConfigManager.setLogger}
-	 */
 	public static init(
 		logger: Logger,
 		globalConfigFilePath: string,
@@ -128,42 +107,15 @@ export class ConfigManager {
 		if (configLoadErrors.length > 0) return configLoadErrors;
 	}
 
-	/**
-	 * Change the {@linkcode Logger} used for future operations
-	 *
-	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
-	 * bad architecture.
-	 *
-	 * @param logger The {@linkcode Logger} to use for future operations
-	 *
-	 * @returns None
-	 *
-	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
-	 * partially initialized, either by {@linkcode ConfigManager.init} or {@linkcode ConfigManager.setLogger}
-	 */
 	public static setLogger(logger: Logger) {
 		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
 		this.LOGGER = logger;
 	}
 
-	/**
-	 * Change the {@linkcode GlobalConfigFile} structure to use for future operations
-	 *
-	 * @param globalConfig The {@linkcode GlobalConfigFile} structure to use for future operations
-	 *
-	 * @returns None
-	 */
 	public static setGlobalConfig(globalConfig: Readonly<GlobalConfigFile>) {
 		this.GLOBAL_CONFIG = globalConfig;
 	}
 
-	/**
-	 * Change the {@linkcode ServiceLocation} configs to use for future operations
-	 *
-	 * @param serviceLocations The {@linkcode ServiceLocation} configs to use for future operations
-	 *
-	 * @returns None
-	 */
 	public static setConfigs(serviceLocations: readonly ServiceLocation[]) {
 		if (!this.EVENT_EMITTER) throw new UninitializedClassError(this.name, nameof(() => this.EVENT_EMITTER));
 
@@ -173,16 +125,6 @@ export class ConfigManager {
 		this.EVENT_EMITTER.emit(ConfigManagerEvent.ConfigsReloaded, serviceLocations);
 	}
 
-	/**
-	 * Read and parse the global config file
-	 *
-	 * @param globalConfigFilePath - Path to the global config file
-	 *
-	 * @returns The parsed {@linkcode GlobalConfigFile} if the load succeeded, otherwise returns the error
-	 *
-	 * @throws Throws {@linkcode UninitializedClassError} if this class does not have a {@linkcode Logger} setup. See
-	 * {@linkcode ConfigManager.init} and/or {@linkcode ConfigManager.setLogger}.
-	 */
 	public static loadGlobalConfig(globalConfigFilePath: string): GlobalConfigFile | Error {
 		if (!this.LOGGER) throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
 
@@ -197,18 +139,6 @@ export class ConfigManager {
 		}
 	}
 
-	/**
-	 * Read and parse service location config files from the service location config directory
-	 *
-	 * @param configsDirPath Path to the service location configs directory
-	 *
-	 * @returns A tuple containing an array of {@linkcode ServiceLocation}s and an array of errors that occurred while
-	 * reading and/or parsing the service location config files, if any, if reading the service location config
-	 * directory succeeded, or an error if reading the directory failed
-	 *
-	 * @throws Throws {@linkcode UninitializedClassError} if this class does not have a {@linkcode Logger} setup. See
-	 * {@linkcode ConfigManager.init} and/or {@linkcode ConfigManager.setLogger}.
-	 */
 	public static loadConfigs(configsDirPath: string): [ServiceLocation[], Error[]] | Error {
 		if (!this.LOGGER) throw new UninitializedClassError(this.name, nameof(() => this.LOGGER));
 
@@ -251,45 +181,16 @@ export class ConfigManager {
 		this.EVENT_EMITTER.on(eventName, listener);
 	}
 
-	/**
-	 * Gets a reeadonly reference to the {@linkcode GlobalConfigFile} structure
-	 *
-	 * @returns A readonly reference to the {@linkcode GlobalConfigFile} structure
-	 *
-	 * @throws Throws {@linkcode UninitializedClassError} if the {@linkcode GlobalConfigFile} structure is not
-	 * loaded yet. See {@linkcode ConfigManager.init}, {@linkcode ConfigManager.loadGlobalConfig}, and
-	 * {@linkcode ConfigManager.setGlobalConfig}.
-	 */
 	public static getGlobalConfig(): Readonly<GlobalConfigFile> {
 		if (!this.GLOBAL_CONFIG) throw new UninitializedClassError(this.name, nameof(() => this.GLOBAL_CONFIG));
 		return this.GLOBAL_CONFIG;
 	}
 
-	/**
-	 * Gets a readonly reference to the {@linkcode ServiceLocation} configs
-	 *
-	 * @returns A readonly reference to the {@linkcode ServiceLocation} configs
-	 *
-	 * @throws Throws {@linkcode UninitializedClassError} if the {@linkcode ServiceLocation} configs have not been
-	 * loaded yet. See {@linkcode ConfigManager.init}, {@linkcode ConfigManager.loadConfigs}, and
-	 * {@linkcode ConfigManager.setConfigs}.
-	 */
 	public static getServiceLocations(): readonly ServiceLocation[] {
 		if (!this.CONFIGS) throw new UninitializedClassError(this.name, nameof(() => this.CONFIGS));
 		return this.CONFIGS.values().toArray();
 	}
 
-	/**
-	 * Gets a readonly reference to a {@linkcode ServiceLocation}'s config
-	 *
-	 * @param guildId The requested service location config's guild ID
-	 *
-	 * @returns A readonly reference to the requested service 's config if it exists, none otherwise
-	 *
-	 * @throws Throws {@linkcode UninitializedClassError} if the {@linkcode ServiceLocation} configs have not been
-	 * loaded yet. See {@linkcode ConfigManager.init}, {@linkcode ConfigManager.loadConfigs}, and
-	 * {@linkcode ConfigManager.setConfigs}
-	 */
 	public static getConfig(guildId: Snowflake): Readonly<ServiceLocation> | undefined {
 		if (!this.CONFIGS) throw new UninitializedClassError(this.name, nameof(() => this.CONFIGS));
 		return this.CONFIGS.get(guildId);

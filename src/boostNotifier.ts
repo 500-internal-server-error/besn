@@ -16,19 +16,6 @@ export class BoostNotifier {
 		this.setServiceLocations(serviceLocations);
 	}
 
-	/**
-	 * Change the {@linkcode Logger} used for future operations
-	 *
-	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
-	 * bad architecture.
-	 *
-	 * @param logger The {@linkcode Logger} to use for future operations
-	 *
-	 * @returns None
-	 *
-	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
-	 * partially initialized, either by {@linkcode BoostNotifier.init} or {@linkcode BoostNotifier.setLogger}
-	 */
 	public static setLogger(logger: Logger) {
 		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
 		this.LOGGER = logger;

@@ -18,29 +18,6 @@ export class MasterCommandHandler {
 
 	private constructor() {}
 
-	/**
-	 * Convenience method to initialize this class, combining setting a {@linkcode Logger}, a DJS {@linkcode Client},
-	 * {@linkcode ServiceLocation} configs, and {@linkcode ICommandHandler}s to use for future operations. See:
-	 * - {@linkcode MasterCommandHandler.setLogger}
-	 * - {@linkcode MasterCommandHandler.setClient}
-	 * - {@linkcode MasterCommandHandler.setServiceLocations}
-	 * - {@linkcode MasterCommandHandler.setCommandHandlers}
-	 *
-	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
-	 * bad architecture.
-	 *
-	 * @param logger The {@linkcode Logger} to use for future operations
-	 * @param client The DJS {@linkcode Client} to use for future operations
-	 * @param serviceLocations The {@linkcode ServiceLocation} configs to use for future operations
-	 * @param commandHandlers The {@linkcode ICommandHandler}s to use for future operations
-	 *
-	 * @returns None
-	 *
-	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
-	 * partially initialized, either by {@linkcode MasterCommandHandler.init} or
-	 * {@linkcode MasterCommandHandler.setLogger}, {@linkcode MasterCommandHandler.setClient}, and/or
-	 * {@linkcode MasterCommandHandler.setCommandHandlers}
-	 */
 	public static init(
 		logger: Logger,
 		client: Client,
@@ -53,69 +30,20 @@ export class MasterCommandHandler {
 		this.setCommandHandlers(commandHandlers);
 	}
 
-	/**
-	 * Change the {@linkcode Logger} used for future operations
-	 *
-	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
-	 * bad architecture.
-	 *
-	 * @param logger The {@linkcode Logger} to use for future operations
-	 *
-	 * @returns None
-	 *
-	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
-	 * partially initialized, either by {@linkcode MasterCommandHandler.init} or
-	 * {@linkcode MasterCommandHandler.setLogger}
-	 */
 	public static setLogger(logger: Logger) {
 		if (this.LOGGER) throw new MultipleClassInitializationsError(this.name, nameof(() => this.LOGGER));
 		this.LOGGER = logger;
 	}
 
-	/**
-	 * Change the DJS {@linkcode Client} used for future operations.
-	 *
-	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
-	 * bad architecture.
-	 *
-	 * @param client The DJS {@linkcode Client} to use for future operations
-	 *
-	 * @returns None
-	 *
-	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
-	 * partially initialized, either by {@linkcode MasterCommandHandler.init} or
-	 * {@linkcode MasterCommandHandler.setClient}
-	 */
 	public static setClient(client: Client) {
 		if (this.CLIENT) throw new MultipleClassInitializationsError(this.name, nameof(() => this.CLIENT));
 		this.CLIENT = client;
 	}
 
-	/**
-	 * Change the {@linkcode ServiceLocation} used for future operations
-	 *
-	 * @param serviceLocations A readonly reference to the {@linkcode ServiceLocation} configs to use for future operations
-	 *
-	 * @returns None
-	 */
 	public static setServiceLocations(serviceLocations: readonly ServiceLocation[]) {
 		this.SERVICE_LOCATIONS = serviceLocations;
 	}
 
-	/**
-	 * Change the {@linkcode ICommandHandler}s used for future operations
-	 *
-	 * This method should not be called multiple times. While it is possible, doing so is likely a mistake or a sign of
-	 * bad architecture.
-	 *
-	 * @param commandHandlers A readonly reference to the {@linkcode ICommandHandler}s to use for future operations
-	 *
-	 * @returns None
-	 *
-	 * @throws Throws {@linkcode MultipleClassInitializationsError} if the class has already been initialized or
-	 * partially initialized, either by {@linkcode MasterCommandHandler.init} or
-	 * {@linkcode MasterCommandHandler.setCommandHandlers}
-	 */
 	public static setCommandHandlers(commandHandlers: readonly ICommandHandler[]) {
 		if (this.COMMAND_HANDLERS) {
 			throw new MultipleClassInitializationsError(this.name, nameof(() => this.COMMAND_HANDLERS));
@@ -124,21 +52,6 @@ export class MasterCommandHandler {
 		this.COMMAND_HANDLERS = commandHandlers;
 	}
 
-	/**
-	 * Replace all commands in serviced guilds with the ones setup by {@linkcode MasterCommandHandler.init} or
-	 * {@linkcode MasterCommandHandler.setCommandHandlers}
-	 *
-	 * @returns None
-	 *
-	 * @throws Throws {@linkcode UninitializedClassError} if this class has not been setup. See
-	 * {@linkcode MasterCommandHandler.init} and/or:
-	 * - {@linkcode MasterCommandHandler.setLogger}
-	 * - {@linkcode MasterCommandHandler.setClient}
-	 * - {@linkcode MasterCommandHandler.setServiceLocations}
-	 * - {@linkcode MasterCommandHandler.setCommandHandlers}
-	 * @throws Throws {@linkcode UninitializedDependencyError} if the DJS {@linkcode Client} used to initialize this
-	 * class is not ready yet (i.e., {@linkcode Client.isReady | Client#isReady} is false)
-	 */
 	public static async registerCommands() {
 		if (!this.SERVICE_LOCATIONS) throw new UninitializedClassError(this.name, nameof(() => this.SERVICE_LOCATIONS));
 		if (!this.COMMAND_HANDLERS) throw new UninitializedClassError(this.name, nameof(() => this.COMMAND_HANDLERS));
@@ -185,19 +98,6 @@ export class MasterCommandHandler {
 		}
 	}
 
-	/**
-	 * Delete all commands in serviced guilds.
-	 *
-	 * @returns None
-	 *
-	 * @throws Throws {@linkcode UninitializedClassError} if this class has not been setup. See
-	 * {@linkcode MasterCommandHandler.init} and/or:
-	 * - {@linkcode MasterCommandHandler.setLogger}
-	 * - {@linkcode MasterCommandHandler.setClient}
-	 * - {@linkcode MasterCommandHandler.setServiceLocations}
-	 * @throws Throws {@linkcode UninitializedDependencyError} if the DJS {@linkcode Client} used to initialize this
-	 * class is not ready yet (i.e., {@linkcode Client.isReady | Client#isReady} is false)
-	 */
 	public static async deleteCommands() {
 		if (!this.SERVICE_LOCATIONS) throw new UninitializedClassError(this.name, nameof(() => this.SERVICE_LOCATIONS));
 		if (!this.CLIENT) throw new UninitializedClassError(this.name, nameof(() => this.CLIENT));
