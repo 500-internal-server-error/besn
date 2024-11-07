@@ -21,13 +21,20 @@ export const serviceLocationSchema = z.object({
 					UTC07: z.string(),
 					UTC08: z.string(),
 					UTC09: z.string(),
+					UTC10: z.string(),
 					UTC11: z.string(),
+					UTC12: z.string(),
 					UTC15: z.string(),
+					UTC16: z.string(),
 					UTC19: z.string(),
+					UTC20: z.string(),
 					UTC21: z.string(),
+					UTC22: z.string(),
 					UTC01: z.string(),
 					UTC02: z.string(),
-					UTC04: z.string()
+					UTC03: z.string(),
+					UTC04: z.string(),
+					UTC05: z.string()
 				})
 			]),
 			ioChannelId: z.string()
