@@ -205,7 +205,14 @@ async function main(args: string[]) {
 
 					case "object": {
 						const startAtHour = `UTC${`${startAt.toUTC().hour}`.padStart(2, "0")}`;
-						msg += (pingRoleId as { [index: string]: string; })[startAtHour] ?? "0";
+						const hourPingRoleId = (pingRoleId as { [index: string]: string; })[startAtHour] ?? "0";
+						if (hourPingRoleId === "0") {
+							logger.error(
+								`Something has gone very wrong here, `
+								+ `startAtHour is ${startAtHour} but hourPingRoleId is ${hourPingRoleId}`
+							);
+						}
+						msg += hourPingRoleId;
 						logger.debug(`pingRoleId is an object: startAtHour = ${startAtHour}`);
 					} break;
 
